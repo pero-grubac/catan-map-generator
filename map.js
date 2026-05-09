@@ -1,21 +1,15 @@
-// ─── Resource & number data ───────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const RESOURCE_COLORS = {
   forest: { fill: "#3d6b1a", stroke: "#2a4d0f", label: "Forest", icon: "🌲" },
-  fields: { fill: "#c8a840", stroke: "#a08020", label: "Fields", icon: "🌾" },
-  pasture: { fill: "#7ab828", stroke: "#558a10", label: "Pasture", icon: "🐑" },
-  mountains: {
-    fill: "#7a5030",
-    stroke: "#5a3820",
-    label: "Mountains",
-    icon: "⛰️",
-  },
-  hills: { fill: "#c86030", stroke: "#a04020", label: "Hills", icon: "🧱" },
+  fields: { fill: "#c8a840", stroke: "#a08020", label: "Grain", icon: "🌾" },
+  pasture: { fill: "#7ab828", stroke: "#558a10", label: "Sheep", icon: "🐑" },
+  mountains: { fill: "#7a5030", stroke: "#5a3820", label: "Rock", icon: "⛰️" },
+  hills: { fill: "#c86030", stroke: "#a04020", label: "Clay", icon: "🧱" },
   desert: { fill: "#d8c878", stroke: "#b8a858", label: "Desert", icon: "🏜️" },
-  gold: { fill: "#e8a820", stroke: "#c08010", label: "Gold", icon: "💰" },
 };
 
-const NUMBER_DOTS = {
+const NUM_DOTS = {
   2: 1,
   3: 2,
   4: 3,
@@ -27,83 +21,78 @@ const NUMBER_DOTS = {
   11: 2,
   12: 1,
 };
-const HOT_NUMBERS = new Set([6, 8]);
-const RARE_NUMBERS = new Set([2, 12]);
+const HOT = new Set([6, 8]);
+const RARE = new Set([2, 12]);
 
-// Standard (3-4 players): 19 land tiles
-const STANDARD_RESOURCES = [
-  "forest",
-  "forest",
-  "forest",
-  "forest",
-  "fields",
-  "fields",
-  "fields",
-  "fields",
-  "pasture",
-  "pasture",
-  "pasture",
-  "pasture",
-  "mountains",
-  "mountains",
-  "mountains",
-  "hills",
-  "hills",
-  "hills",
-  "desert",
-];
-const STANDARD_NUMBERS = [
-  2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12,
-];
+// Standard (3-4p): 19 land tiles
+const STD_RESOURCES = {
+  forest: 4,
+  fields: 4,
+  pasture: 4,
+  mountains: 3,
+  hills: 3,
+  desert: 1,
+};
+const STD_NUMBERS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
-// Extended (5-6 players): 30 land tiles
-// Note: 7 resource types on 30 densely-connected hexes makes "no same resource adjacent"
-// mathematically near-impossible. The constraint is ignored with a warning for this mode.
-const EXTENDED_RESOURCES = [
-  "forest",
-  "forest",
-  "forest",
-  "forest",
-  "forest",
-  "forest",
-  "fields",
-  "fields",
-  "fields",
-  "fields",
-  "fields",
-  "fields",
-  "pasture",
-  "pasture",
-  "pasture",
-  "pasture",
-  "pasture",
-  "pasture",
-  "mountains",
-  "mountains",
-  "mountains",
-  "mountains",
-  "hills",
-  "hills",
-  "hills",
-  "hills",
-  "hills",
-  "desert",
-  "desert",
-  "gold",
-  "gold",
-];
-const EXTENDED_NUMBERS = [
+// Extended (5-6p): 30 land tiles, no gold, 2 deserts
+const EXT_RESOURCES = {
+  forest: 6,
+  fields: 6,
+  pasture: 6,
+  mountains: 5,
+  hills: 5,
+  desert: 2,
+};
+const EXT_NUMBERS = [
   2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11,
   11, 11, 12, 12,
 ];
 
-// ─── Hex grid ─────────────────────────────────────────────────────────────────
+// ─── Ports ────────────────────────────────────────────────────────────────────
+// Each port: { r, c } = the land hex it faces, edge = which side (0=NE,1=E,2=SE,3=SW,4=W,5=NW)
+// Port types are shuffled each generation for variety.
+
+// ─── Ports ────────────────────────────────────────────────────────────────────
+// Port positions are FIXED per official Catan layout.
+// Each entry: { r, c } = land hex, edge = exposed side, type data fixed.
+
+const STD_PORT_POSITIONS = [
+  { r: 0, c: 0, edge: 5, label: "2:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 0, c: 1, edge: 0, label: "2:1", icon: "🌾", color: "#c8a840" }, // Grain
+  { r: 0, c: 2, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 1, c: 3, edge: 1, label: "2:1", icon: "⛰️", color: "#7a5030" }, // Rock
+  { r: 2, c: 4, edge: 2, label: "2:1", icon: "🌲", color: "#3d6b1a" }, // Forest
+  { r: 3, c: 3, edge: 2, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 4, c: 2, edge: 3, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 4, c: 0, edge: 3, label: "2:1", icon: "🐑", color: "#7ab828" }, // Sheep
+  { r: 2, c: 0, edge: 4, label: "2:1", icon: "🧱", color: "#c86030" }, // Clay
+];
+
+const EXT_PORT_POSITIONS = [
+  { r: 0, c: 0, edge: 5, label: "2:1", icon: "🌲", color: "#3d6b1a" }, // Forest
+  { r: 0, c: 1, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 0, c: 2, edge: 0, label: "2:1", icon: "🌾", color: "#c8a840" }, // Grain
+  { r: 1, c: 3, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 2, c: 4, edge: 1, label: "2:1", icon: "⛰️", color: "#7a5030" }, // Rock
+  { r: 3, c: 5, edge: 1, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 4, c: 4, edge: 2, label: "2:1", icon: "🐑", color: "#7ab828" }, // Sheep
+  { r: 5, c: 3, edge: 2, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 6, c: 2, edge: 3, label: "2:1", icon: "🧱", color: "#c86030" }, // Clay
+  { r: 6, c: 0, edge: 3, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 3, c: 0, edge: 4, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+];
+
+// Outward angle (degrees) for each edge direction
+const EDGE_ANGLE = [30, 90, 150, 210, 270, 330]; // NE,E,SE,SW,W,NW
+
+// ─── Grid ─────────────────────────────────────────────────────────────────────
 
 function getRowCounts(mode) {
   return mode === "standard" ? [3, 4, 5, 4, 3] : [3, 4, 5, 6, 5, 4, 3];
 }
 
-function buildHexGrid(rowCounts) {
+function buildGrid(rowCounts) {
   const hexes = [];
   let id = 0;
   for (let r = 0; r < rowCounts.length; r++)
@@ -111,52 +100,43 @@ function buildHexGrid(rowCounts) {
   return hexes;
 }
 
-function rcToIndex(rowCounts, r, c) {
-  if (r < 0 || r >= rowCounts.length) return -1;
-  if (c < 0 || c >= rowCounts[r]) return -1;
+function rcToIdx(rowCounts, r, c) {
+  if (r < 0 || r >= rowCounts.length || c < 0 || c >= rowCounts[r]) return -1;
   let idx = 0;
   for (let i = 0; i < r; i++) idx += rowCounts[i];
   return idx + c;
 }
 
-/**
- * Returns the 6 neighbour indices for hex at flat index `hid`.
- *
- * Layout: pointy-top hexes, offset grid.
- * For a hex at (r, c):
- *   Same row: (r, c±1)
- *   Row above is WIDER  → neighbours are (r-1, c) and (r-1, c+1)
- *   Row above is NARROWER → neighbours are (r-1, c-1) and (r-1, c)
- *   (mirror logic for row below)
- */
-function getNeighbors(hexes, rowCounts, hid) {
-  const { r, c } = hexes[hid];
-  const cur = rowCounts[r];
-  const above = r > 0 ? rowCounts[r - 1] : -1;
-  const below = r < rowCounts.length - 1 ? rowCounts[r + 1] : -1;
-
-  const cands = [
-    rcToIndex(rowCounts, r, c - 1),
-    rcToIndex(rowCounts, r, c + 1),
-  ];
-
-  if (above > cur) {
-    cands.push(rcToIndex(rowCounts, r - 1, c));
-    cands.push(rcToIndex(rowCounts, r - 1, c + 1));
-  } else if (above !== -1) {
-    cands.push(rcToIndex(rowCounts, r - 1, c - 1));
-    cands.push(rcToIndex(rowCounts, r - 1, c));
-  }
-
-  if (below > cur) {
-    cands.push(rcToIndex(rowCounts, r + 1, c));
-    cands.push(rcToIndex(rowCounts, r + 1, c + 1));
-  } else if (below !== -1) {
-    cands.push(rcToIndex(rowCounts, r + 1, c - 1));
-    cands.push(rcToIndex(rowCounts, r + 1, c));
-  }
-
-  return cands.filter((x) => x !== -1);
+function buildNeighborCache(hexes, rowCounts) {
+  return hexes.map(({ r, c }) => {
+    const cur = rowCounts[r];
+    const above = r > 0 ? rowCounts[r - 1] : -1;
+    const below = r < rowCounts.length - 1 ? rowCounts[r + 1] : -1;
+    const cands = [rcToIdx(rowCounts, r, c - 1), rcToIdx(rowCounts, r, c + 1)];
+    if (above > cur) {
+      cands.push(
+        rcToIdx(rowCounts, r - 1, c),
+        rcToIdx(rowCounts, r - 1, c + 1),
+      );
+    } else if (above !== -1) {
+      cands.push(
+        rcToIdx(rowCounts, r - 1, c - 1),
+        rcToIdx(rowCounts, r - 1, c),
+      );
+    }
+    if (below > cur) {
+      cands.push(
+        rcToIdx(rowCounts, r + 1, c),
+        rcToIdx(rowCounts, r + 1, c + 1),
+      );
+    } else if (below !== -1) {
+      cands.push(
+        rcToIdx(rowCounts, r + 1, c - 1),
+        rcToIdx(rowCounts, r + 1, c),
+      );
+    }
+    return cands.filter((x) => x !== -1);
+  });
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -170,10 +150,258 @@ function shuffle(arr) {
   return a;
 }
 
-// ─── Generation ───────────────────────────────────────────────────────────────
+// ─── Backtracking: resources ──────────────────────────────────────────────────
+// Visits hexes in a random order (shuffled before each run) so rare resources
+// like desert are never biased toward the end of the grid.
+// Resource types are tried in fully random order at each hex.
+// Guarantees no same-resource adjacency.
+
+function btResources(hexes, nc, available) {
+  const total = hexes.length;
+  const assigned = new Array(total).fill(null); // indexed by hex id
+  const rem = { ...available };
+
+  // Shuffle the visit order so every hex has equal chance of getting any resource
+  const visitOrder = shuffle([...Array(total).keys()]);
+
+  function bt(step) {
+    if (step === total) return true;
+
+    const pos = visitOrder[step];
+    const types = shuffle(Object.keys(rem).filter((r) => rem[r] > 0));
+
+    for (const res of types) {
+      // Check against already-assigned neighbours (only those visited before this step)
+      let valid = true;
+      for (const n of nc[pos]) {
+        if (assigned[n] === res) {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) continue;
+
+      assigned[pos] = res;
+      rem[res]--;
+      if (bt(step + 1)) return true;
+      assigned[pos] = null;
+      rem[res]++;
+    }
+    return false;
+  }
+
+  return bt(0) ? [...assigned] : null;
+}
+
+// ─── Backtracking: numbers ───────────────────────────────────────────────────
+// Slots sorted by degree desc (hardest first → less backtracking).
+// Aborts early if `deadline` is exceeded so caller can restart fresh.
+
+function btNumbers(hexes, nc, resourceArr, pool, no68, no212, deadline) {
+  const landIdx = resourceArr.reduce(
+    (a, r, i) => (r !== "desert" ? [...a, i] : a),
+    [],
+  );
+  // Highest-degree land tiles first
+  landIdx.sort((a, b) => nc[b].length - nc[a].length);
+
+  const assigned = new Array(hexes.length).fill(null);
+  const nums = shuffle([...pool]);
+  const used = new Array(nums.length).fill(false);
+  let aborted = false;
+
+  function bt(slot) {
+    if (aborted) return false;
+    if (Date.now() > deadline) {
+      aborted = true;
+      return false;
+    }
+    if (slot === landIdx.length) return true;
+
+    const hi = landIdx[slot];
+    const order = shuffle([...nums.keys()].filter((i) => !used[i]));
+
+    for (const ni of order) {
+      const num = nums[ni];
+      let valid = true;
+      for (const n of nc[hi]) {
+        const b = assigned[n];
+        if (b === null) continue;
+        if (no68 && HOT.has(num) && HOT.has(b)) {
+          valid = false;
+          break;
+        }
+        if (no212 && RARE.has(num) && RARE.has(b)) {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) continue;
+
+      assigned[hi] = num;
+      used[ni] = true;
+      if (bt(slot + 1)) return true;
+      assigned[hi] = null;
+      used[ni] = false;
+    }
+    return false;
+  }
+
+  return !bt(0) || aborted ? null : [...assigned];
+}
+
+// ─── Scoring ──────────────────────────────────────────────────────────────────
+// Lower is worse, higher is better. Zero = perfect.
+
+function scoreMap(hexes, nc, resourceArr, numberArr) {
+  let score = 0;
+
+  for (let i = 0; i < hexes.length; i++) {
+    for (const n of nc[i]) {
+      if (n <= i) continue;
+      if (resourceArr[i] === resourceArr[n]) score -= 20;
+      if (
+        numberArr[i] &&
+        numberArr[n] &&
+        HOT.has(numberArr[i]) &&
+        HOT.has(numberArr[n])
+      )
+        score -= 100;
+      if (
+        numberArr[i] &&
+        numberArr[n] &&
+        RARE.has(numberArr[i]) &&
+        RARE.has(numberArr[n])
+      )
+        score -= 40;
+    }
+  }
+
+  // Penalise unbalanced probability distribution per resource type
+  const prob = {};
+  for (let i = 0; i < hexes.length; i++) {
+    if (!numberArr[i]) continue;
+    const r = resourceArr[i];
+    prob[r] = (prob[r] || 0) + NUM_DOTS[numberArr[i]];
+  }
+  const vals = Object.values(prob);
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  const variance = vals.reduce((a, b) => a + (b - avg) ** 2, 0) / vals.length;
+  score -= Math.round(variance);
+
+  return score;
+}
+
+// ─── Generate best map ────────────────────────────────────────────────────────
+// Strategy:
+//   1. Backtrack resources (guaranteed valid if constraints enabled)
+//   2. Backtrack numbers with a per-attempt deadline; restart if deadline hit
+//   3. Collect up to TARGET candidates within TOTAL_TIMEOUT, return highest-scored
+
+function generateBestMap({
+  hexes,
+  nc,
+  available,
+  numbers,
+  no68,
+  no212,
+  noSameRes,
+  totalTimeout = 2500,
+  perAttempt = 150,
+  target = 8,
+}) {
+  const candidates = [];
+  const globalStart = Date.now();
+
+  // Fallback: first valid placement without number constraints
+  let fallback = null;
+
+  while (
+    Date.now() - globalStart < totalTimeout &&
+    candidates.length < target
+  ) {
+    // Step 1: resource layout (backtracking if noSameRes, else random)
+    let resourceArr;
+    if (noSameRes) {
+      resourceArr = btResources(hexes, nc, available);
+      if (!resourceArr) continue; // shouldn't happen but guard anyway
+    } else {
+      const flat = Object.entries(available).flatMap(([r, n]) =>
+        Array(n).fill(r),
+      );
+      resourceArr = shuffle(flat);
+    }
+
+    // Fallback built from first resource layout (no number constraints)
+    if (!fallback) {
+      const li = resourceArr.reduce(
+        (a, r, i) => (r !== "desert" ? [...a, i] : a),
+        [],
+      );
+      const na = new Array(hexes.length).fill(null);
+      shuffle(numbers).forEach((n, ni) => {
+        if (li[ni] !== undefined) na[li[ni]] = n;
+      });
+      fallback = {
+        resourceArr: [...resourceArr],
+        numberArr: na,
+        score: scoreMap(hexes, nc, resourceArr, na),
+      };
+    }
+
+    // Step 2: number layout
+    let numberArr;
+    if (no68 || no212) {
+      numberArr = btNumbers(
+        hexes,
+        nc,
+        resourceArr,
+        numbers,
+        no68,
+        no212,
+        Date.now() + perAttempt,
+      );
+      if (!numberArr) continue; // timed out, retry
+    } else {
+      const li = resourceArr.reduce(
+        (a, r, i) => (r !== "desert" ? [...a, i] : a),
+        [],
+      );
+      numberArr = new Array(hexes.length).fill(null);
+      shuffle(numbers).forEach((n, ni) => {
+        if (li[ni] !== undefined) numberArr[li[ni]] = n;
+      });
+    }
+
+    candidates.push({
+      resourceArr,
+      numberArr,
+      score: scoreMap(hexes, nc, resourceArr, numberArr),
+    });
+  }
+
+  if (candidates.length === 0)
+    return {
+      ...fallback,
+      attempts: 0,
+      elapsed: Date.now() - globalStart,
+      usedFallback: true,
+    };
+
+  candidates.sort((a, b) => b.score - a.score);
+  return {
+    ...candidates[0],
+    attempts: candidates.length,
+    elapsed: Date.now() - globalStart,
+    usedFallback: false,
+    scoreRange: [candidates[0].score, candidates[candidates.length - 1].score],
+  };
+}
+
+// ─── UI state ─────────────────────────────────────────────────────────────────
 
 let currentMode = "standard";
-let generationId = 0; // used to cancel in-flight generation if user clicks again
+let generationId = 0;
 
 function setMode(mode) {
   currentMode = mode;
@@ -185,7 +413,6 @@ function setMode(mode) {
 }
 
 function generateMap() {
-  // Cancel any previous run
   const myId = ++generationId;
 
   const no68 = document.getElementById("no-68-adjacent").checked;
@@ -195,221 +422,237 @@ function generateMap() {
   ).checked;
 
   const rowCounts = getRowCounts(currentMode);
-  const hexes = buildHexGrid(rowCounts);
-  const total = hexes.length;
+  const hexes = buildGrid(rowCounts);
+  const nc = buildNeighborCache(hexes, rowCounts);
 
-  const baseResources =
-    currentMode === "standard" ? STANDARD_RESOURCES : EXTENDED_RESOURCES;
-  const baseNumbers =
-    currentMode === "standard" ? STANDARD_NUMBERS : EXTENDED_NUMBERS;
+  const available =
+    currentMode === "standard" ? { ...STD_RESOURCES } : { ...EXT_RESOURCES };
+  const numbers = currentMode === "standard" ? STD_NUMBERS : EXT_NUMBERS;
 
-  // Extended map: "no same resource" is geometrically infeasible with only 7 types on 30 tiles.
-  const extendedSameResWarning = noSameRes && currentMode === "extended";
-  const applySameRes = noSameRes && currentMode === "standard";
-
-  const neighborCache = hexes.map((_, i) => getNeighbors(hexes, rowCounts, i));
-
-  // Show searching state
   setGenerating(true);
-  renderWarnings(true, extendedSameResWarning);
 
-  // Time-based limit: keep trying for up to TIMEOUT_MS before giving up.
-  // We yield to the browser every CHUNK attempts so the page stays responsive.
-  const TIMEOUT_MS = 3000;
-  const CHUNK = 500; // attempts per tick before yielding
-
-  const deadline = performance.now() + TIMEOUT_MS;
-  let attempt = 0;
-  let bestResult = null; // best-effort fallback built on first attempt
-
-  function tryChunk() {
-    // If the user triggered a new generation, abandon this one
+  // Yield to browser so the button disables before the (synchronous) generation starts
+  setTimeout(() => {
     if (generationId !== myId) return;
 
-    const chunkEnd = Math.min(attempt + CHUNK, Infinity);
+    const result = generateBestMap({
+      hexes,
+      nc,
+      available,
+      numbers,
+      no68,
+      no212,
+      noSameRes,
+    });
 
-    while (attempt < chunkEnd) {
-      attempt++;
+    if (generationId !== myId) return;
 
-      const resourceArr = shuffle(baseResources);
-
-      // Build fallback on very first attempt (no constraints)
-      if (attempt === 1) {
-        const li = resourceArr.reduce(
-          (a, r, i) => (r !== "desert" && r !== "gold" ? [...a, i] : a),
-          [],
-        );
-        const na = new Array(total).fill(null);
-        shuffle(baseNumbers).forEach((n, ni) => {
-          na[li[ni]] = n;
-        });
-        bestResult = { resourceArr: [...resourceArr], numberArr: na };
-      }
-
-      // Same-resource check
-      if (applySameRes) {
-        let ok = true;
-        for (let i = 0; i < total && ok; i++)
-          for (const n of neighborCache[i])
-            if (n > i && resourceArr[i] === resourceArr[n]) {
-              ok = false;
-              break;
-            }
-        if (!ok) continue;
-      }
-
-      // Assign numbers
-      const landIndices = resourceArr.reduce(
-        (acc, r, i) => (r !== "desert" && r !== "gold" ? [...acc, i] : acc),
-        [],
-      );
-      const shuffledNums = shuffle(baseNumbers);
-      const numberArr = new Array(total).fill(null);
-      landIndices.forEach((ti, ni) => {
-        numberArr[ti] = shuffledNums[ni];
-      });
-
-      // Hot/rare adjacency check
-      if (no68 || no212) {
-        let ok = true;
-        for (let i = 0; i < total && ok; i++) {
-          if (numberArr[i] === null) continue;
-          for (const n of neighborCache[i]) {
-            if (n <= i || numberArr[n] === null) continue;
-            const a = numberArr[i],
-              b = numberArr[n];
-            if (no68 && HOT_NUMBERS.has(a) && HOT_NUMBERS.has(b)) {
-              ok = false;
-              break;
-            }
-            if (no212 && RARE_NUMBERS.has(a) && RARE_NUMBERS.has(b)) {
-              ok = false;
-              break;
-            }
-          }
-        }
-        if (!ok) continue;
-      }
-
-      // Valid solution found
-      setGenerating(false);
-      renderMap({ hexes, rowCounts, resourceArr, numberArr });
-      renderInfo(attempt, true, performance.now() - deadline + TIMEOUT_MS);
-      renderWarnings(true, extendedSameResWarning);
-      return;
-    }
-
-    // Check if time is still available
-    if (performance.now() < deadline) {
-      setTimeout(tryChunk, 0); // yield, then continue
-    } else {
-      // Timed out — render best-effort
-      setGenerating(false);
-      renderMap({ hexes, rowCounts, ...bestResult });
-      renderInfo(attempt, false, TIMEOUT_MS);
-      renderWarnings(false, extendedSameResWarning);
-    }
-  }
-
-  setTimeout(tryChunk, 0);
+    setGenerating(false);
+    renderMap({ hexes, rowCounts, nc, ...result });
+    renderInfo(result);
+    renderWarnings(result);
+  }, 0);
 }
 
 function setGenerating(on) {
   const btn = document.querySelector(".btn-generate");
   btn.disabled = on;
-  btn.textContent = on ? "⏳ Searching…" : "🎲 Generate Map";
+  btn.textContent = on ? "⏳ Generating…" : "🎲 Generate Map";
 }
 
 // ─── SVG rendering ────────────────────────────────────────────────────────────
 
 function hexCorners(cx, cy, size) {
-  const pts = [];
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i - Math.PI / 6; // pointy-top
-    pts.push(`${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`);
-  }
-  return pts.join(" ");
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 3) * i - Math.PI / 6;
+    return `${cx + size * Math.cos(a)},${cy + size * Math.sin(a)}`;
+  }).join(" ");
 }
 
 function hexPixel(r, c, rowCounts, S) {
-  const maxCols = Math.max(...rowCounts);
   const dx = Math.sqrt(3) * S;
-  const dy = 1.5 * S;
+  const maxWidth = Math.max(...rowCounts) * dx;
   const rowWidth = rowCounts[r] * dx;
-  const totalWidth = maxCols * dx;
-  const xOffset = (totalWidth - rowWidth) / 2;
-  return { x: xOffset + c * dx + dx / 2, y: r * dy + S };
+  const xOffset = (maxWidth - rowWidth) / 2;
+  return { x: xOffset + c * dx + dx / 2, y: r * 1.5 * S + S };
 }
 
-function el(tag, attrs, textContent) {
+function svgEl(tag, attrs, text) {
   const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-  if (textContent !== undefined) e.textContent = textContent;
+  if (text !== undefined) e.textContent = text;
   return e;
 }
 
-function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
+function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
   const svg = document.getElementById("map-svg");
   const S = currentMode === "standard" ? 64 : 54;
-  const PAD = S * 1.3;
-  const maxCols = Math.max(...rowCounts);
-  const dx = Math.sqrt(3) * S;
-  const dy = 1.5 * S;
-  const W = maxCols * dx + PAD * 2;
-  const H = (rowCounts.length - 1) * dy + S * 2 + PAD * 2;
+  const DX = Math.sqrt(3) * S;
+  const DY = 1.5 * S;
+  const PAD = S * 1.1; // enough room so top sea hexes aren't clipped
 
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("width", Math.round(W));
-  svg.setAttribute("height", Math.round(H));
+  // Six neighbour offsets (pointy-top): E, W, SE, SW, NE, NW
+  const NEIGH_OFFSETS = [
+    { x: DX, y: 0 },
+    { x: -DX, y: 0 },
+    { x: DX / 2, y: DY },
+    { x: -DX / 2, y: DY },
+    { x: DX / 2, y: -DY },
+    { x: -DX / 2, y: -DY },
+  ];
+  // Edge index [NE,E,SE,SW,W,NW] → NEIGH_OFFSETS index
+  const EDGE_TO_NEIGH = [4, 0, 2, 3, 1, 5];
+
+  // Key function for deduplication (round to nearest int)
+  const hkey = (x, y) => `${Math.round(x)},${Math.round(y)}`;
+
+  // Build land hex pixel positions
+  const landPixels = hexes.map((h) => {
+    const maxCols = Math.max(...rowCounts);
+    const xOff = (maxCols * DX - rowCounts[h.r] * DX) / 2;
+    return { x: xOff + h.c * DX + DX / 2, y: h.r * DY + S };
+  });
+  const landSet = new Set(landPixels.map((p) => hkey(p.x, p.y)));
+
+  // Build sea hex ring: one hex step outward from every land hex
+  const seaMap = new Map(); // key → {x, y, isPort, portType}
+  for (const lp of landPixels) {
+    for (const d of NEIGH_OFFSETS) {
+      const nx = lp.x + d.x,
+        ny = lp.y + d.y,
+        k = hkey(nx, ny);
+      if (!landSet.has(k) && !seaMap.has(k))
+        seaMap.set(k, { x: nx, y: ny, isPort: false, portType: null });
+    }
+  }
+
+  // Assign fixed port types directly from position definitions
+  const portPositions =
+    currentMode === "standard" ? STD_PORT_POSITIONS : EXT_PORT_POSITIONS;
+
+  portPositions.forEach((pos) => {
+    const lp =
+      landPixels[hexes.findIndex((h) => h.r === pos.r && h.c === pos.c)];
+    const d = NEIGH_OFFSETS[EDGE_TO_NEIGH[pos.edge]];
+    const k = hkey(lp.x + d.x, lp.y + d.y);
+    if (seaMap.has(k)) {
+      seaMap.get(k).isPort = true;
+      seaMap.get(k).portType = pos; // pos itself carries label, icon, color
+    }
+  });
+
+  // Compute bounding box of all hex CENTRES, then add hex radius as margin
+  const allX = [...landPixels, ...seaMap.values()].map((h) => h.x);
+  const allY = [...landPixels, ...seaMap.values()].map((h) => h.y);
+  const minX = Math.min(...allX),
+    maxX = Math.max(...allX);
+  const minY = Math.min(...allY),
+    maxY = Math.max(...allY);
+
+  // offX/offY shift all coords so minX/minY land at PAD + S (hex radius)
+  const offX = PAD + S - minX;
+  const offY = PAD + S - minY;
+  const W = maxX - minX + S * 2 + PAD * 2;
+  const H = maxY - minY + S * 2 + PAD * 2;
+
+  svg.setAttribute("viewBox", `0 0 ${Math.round(W)} ${Math.round(H)}`);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
   svg.innerHTML = "";
 
-  // Sea background
-  svg.appendChild(el("rect", { width: W, height: H, fill: "#0d2238" }));
+  // ── 1. Draw all sea hexes first ──
+  for (const sh of seaMap.values()) {
+    const cx = sh.x + offX,
+      cy = sh.y + offY;
 
-  // Wave pattern
-  const waves = el("g", { opacity: "0.1" });
-  for (let wy = 16; wy < H; wy += 22)
-    for (let wx = 0; wx < W; wx += 34) {
-      const p = el("path", {
-        d: `M${wx},${wy} q9,-5 18,0 q9,5 18,0`,
-        stroke: "#4a9acc",
-        "stroke-width": "1",
+    svg.appendChild(
+      svgEl("polygon", {
+        points: hexCorners(cx + 1, cy + 2, S - 1),
+        fill: "rgba(0,0,0,0.2)",
+        stroke: "none",
+      }),
+    );
+    svg.appendChild(
+      svgEl("polygon", {
+        points: hexCorners(cx, cy, S - 1),
+        fill: sh.isPort ? "#1e5a8a" : "#163d5e",
+        stroke: sh.isPort ? "#3a8abf" : "#1e5a80",
+        "stroke-width": "2",
+      }),
+    );
+    svg.appendChild(
+      svgEl("polygon", {
+        points: hexCorners(cx, cy, S - 5),
         fill: "none",
-      });
-      waves.appendChild(p);
-    }
-  svg.appendChild(waves);
+        stroke: "rgba(255,255,255,0.06)",
+        "stroke-width": "1",
+      }),
+    );
 
+    if (sh.isPort && sh.portType) {
+      const pt = sh.portType;
+      const iconSz = Math.round(S * 0.36);
+      svg.appendChild(
+        svgEl(
+          "text",
+          {
+            x: cx,
+            y: cy - S * 0.1,
+            "text-anchor": "middle",
+            "dominant-baseline": "middle",
+            "font-size": `${iconSz}px`,
+          },
+          pt.icon,
+        ),
+      );
+      svg.appendChild(
+        svgEl(
+          "text",
+          {
+            x: cx,
+            y: cy + S * 0.38,
+            "text-anchor": "middle",
+            "dominant-baseline": "central",
+            "font-family": "Cinzel, serif",
+            "font-size": `${Math.round(S * 0.19)}px`,
+            "font-weight": "700",
+            fill: "#f0e6c8",
+            "letter-spacing": "0.04em",
+          },
+          pt.label,
+        ),
+      );
+    }
+  }
+
+  // ── 2. Draw land hexes on top ──
   hexes.forEach((hex, i) => {
     const resource = resourceArr[i];
     const number = numberArr[i];
-    const { x: rx, y: ry } = hexPixel(hex.r, hex.c, rowCounts, S);
-    const cx = rx + PAD,
-      cy = ry + PAD;
+    const lp = landPixels[i];
+    const cx = lp.x + offX,
+      cy = lp.y + offY;
     const rc = RESOURCE_COLORS[resource] || RESOURCE_COLORS.desert;
+    const g = svgEl("g", {});
 
-    const g = el("g", {});
-
-    // Shadow
     g.appendChild(
-      el("polygon", {
+      svgEl("polygon", {
         points: hexCorners(cx + 1, cy + 2, S),
         fill: "rgba(0,0,0,0.28)",
         stroke: "none",
       }),
     );
-    // Hex face
     g.appendChild(
-      el("polygon", {
+      svgEl("polygon", {
         points: hexCorners(cx, cy, S - 1),
         fill: rc.fill,
         stroke: rc.stroke,
         "stroke-width": "2",
       }),
     );
-    // Inner highlight
     g.appendChild(
-      el("polygon", {
+      svgEl("polygon", {
         points: hexCorners(cx, cy, S - 5),
         fill: "none",
         stroke: "rgba(255,255,255,0.08)",
@@ -417,14 +660,34 @@ function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
       }),
     );
 
-    // Icon
-    const iconSz = Math.round(S * 0.46);
+    const iconSz = Math.round(S * 0.38);
+
+    // Label top
     g.appendChild(
-      el(
+      svgEl(
         "text",
         {
           x: cx,
-          y: cy + iconSz * 0.35,
+          y: cy - S * 0.48,
+          "text-anchor": "middle",
+          "dominant-baseline": "central",
+          "font-family": "Crimson Pro, serif",
+          "font-size": `${Math.round(S * 0.165)}px`,
+          "font-weight": "500",
+          fill: "rgba(255,255,220,0.65)",
+          "letter-spacing": "0.04em",
+        },
+        rc.label.toUpperCase(),
+      ),
+    );
+
+    // Icon centre
+    g.appendChild(
+      svgEl(
+        "text",
+        {
+          x: cx,
+          y: cy,
           "text-anchor": "middle",
           "dominant-baseline": "middle",
           "font-size": `${iconSz}px`,
@@ -433,36 +696,15 @@ function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
       ),
     );
 
-    // Resource label
-    if (resource !== "sea") {
-      g.appendChild(
-        el(
-          "text",
-          {
-            x: cx,
-            y: cy - S * 0.52,
-            "text-anchor": "middle",
-            "dominant-baseline": "central",
-            "font-family": "Crimson Pro, serif",
-            "font-size": `${Math.round(S * 0.165)}px`,
-            "font-weight": "500",
-            fill: "rgba(255,255,220,0.65)",
-            "letter-spacing": "0.04em",
-          },
-          rc.label.toUpperCase(),
-        ),
-      );
-    }
-
-    // Number token
-    if (number !== null && resource !== "sea") {
-      const isHot = HOT_NUMBERS.has(number);
-      const isRare = RARE_NUMBERS.has(number);
-      const tokR = Math.round(S * 0.27);
-      const tokCY = cy + S * 0.3;
+    // Token bottom
+    if (number !== null && resource !== "desert") {
+      const isHot = HOT.has(number);
+      const isRare = RARE.has(number);
+      const tokR = Math.round(S * 0.25);
+      const tokCY = cy + S * 0.52;
 
       g.appendChild(
-        el("circle", {
+        svgEl("circle", {
           cx: cx + 1,
           cy: tokCY + 2,
           r: tokR,
@@ -470,7 +712,7 @@ function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
         }),
       );
       g.appendChild(
-        el("circle", {
+        svgEl("circle", {
           cx: cx,
           cy: tokCY,
           r: tokR,
@@ -480,7 +722,7 @@ function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
         }),
       );
       g.appendChild(
-        el(
+        svgEl(
           "text",
           {
             x: cx,
@@ -496,61 +738,53 @@ function renderMap({ hexes, rowCounts, resourceArr, numberArr }) {
         ),
       );
 
-      // Probability dots
-      const dots = NUMBER_DOTS[number] || 1;
-      const dotR = 1.6,
+      const dots = NUM_DOTS[number] || 1,
+        dotR = 1.6,
         dotSp = 4;
-      const dotY = tokCY + tokR * 0.52;
-      const totalW = (dots - 1) * dotSp;
-      for (let d = 0; d < dots; d++) {
+      const dotY = tokCY + tokR * 0.52,
+        totalW = (dots - 1) * dotSp;
+      for (let d = 0; d < dots; d++)
         g.appendChild(
-          el("circle", {
+          svgEl("circle", {
             cx: cx - totalW / 2 + d * dotSp,
             cy: dotY,
             r: dotR,
             fill: isHot ? "#ff9090" : isRare ? "#e0c070" : "#5a3a10",
           }),
         );
-      }
     }
 
     svg.appendChild(g);
   });
 }
 
-// ─── UI ───────────────────────────────────────────────────────────────────────
+// ─── Info & warnings ──────────────────────────────────────────────────────────
 
-function renderInfo(attempts, success, elapsedMs) {
+function renderInfo({ attempts, elapsed, scoreRange, usedFallback }) {
   const mode =
     currentMode === "standard" ? "Standard (3-4p)" : "Extended (5-6p)";
   const timeStr =
-    elapsedMs < 1
-      ? "<1ms"
-      : elapsedMs < 1000
-        ? `${Math.round(elapsedMs)}ms`
-        : `${(elapsedMs / 1000).toFixed(1)}s`;
+    elapsed < 1000 ? `${elapsed}ms` : `${(elapsed / 1000).toFixed(1)}s`;
+  const status = usedFallback
+    ? `<span style="color:#f08040">Best effort</span>`
+    : `<span style="color:#80c840">Valid ✓ (best of ${attempts})</span>`;
+  const scoreStr = scoreRange ? `${scoreRange[0]} → ${scoreRange[1]}` : "—";
+
   document.getElementById("info-bar").innerHTML = `
     <div class="info-pill">Mode: <span>${mode}</span></div>
-    <div class="info-pill">Attempts: <span>${attempts.toLocaleString()}</span></div>
     <div class="info-pill">Time: <span>${timeStr}</span></div>
-    <div class="info-pill">Status: <span style="color:${success ? "#80c840" : "#f08040"}">${success ? "Valid ✓" : "Best effort"}</span></div>
+    <div class="info-pill">Score range: <span>${scoreStr}</span></div>
+    <div class="info-pill">Status: ${status}</div>
   `;
 }
 
-function renderWarnings(success, extendedSameResWarning) {
+function renderWarnings({ usedFallback }) {
   const c = document.getElementById("warning-container");
-  const msgs = [];
-  if (extendedSameResWarning) {
-    msgs.push(
-      '⚠️ "No same resource adjacent" nije primjenjivo na Extended mapu — 7 tipova resursa nije dovoljno za 30 heksova u ovako gustoj mreži. Ostala pravila su primijenjena.',
-    );
+  if (usedFallback) {
+    c.innerHTML = `<div class="warning-box">⚠️ Nije pronađeno potpuno validno rješenje u zadanom vremenu. Prikazuje se best-effort raspored — pokušaj isključiti neka pravila.</div>`;
+  } else {
+    c.innerHTML = "";
   }
-  if (!success) {
-    msgs.push(
-      "⚠️ Nije pronađeno rješenje za 3 sekunde. Prikazuje se best-effort raspored — pokušaj isključiti neka pravila.",
-    );
-  }
-  c.innerHTML = msgs.map((m) => `<div class="warning-box">${m}</div>`).join("");
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────

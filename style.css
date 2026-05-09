@@ -222,13 +222,16 @@ main {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   overflow: auto;
 }
 
 #map-svg {
   display: block;
-  max-width: 100%;
+  width: 100%;
+  max-width: 860px;
   height: auto;
+  margin: 0 auto;
 }
 
 .warning-box {
