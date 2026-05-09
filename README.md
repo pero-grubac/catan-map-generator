@@ -2,7 +2,7 @@
 
 A random map generator for **Catan** (standard 3-4 player) and the **5-6 player extension**, deployable as a static site on GitHub Pages.
 
-[![Live Demo](https://img.shields.io/badge/🗺️_Live_Demo-catan--map--generator-c9973a?style=for-the-badge)](https://github.com/pero-grubac/catan-map-generator)
+[![Live Demo](https://img.shields.io/badge/🗺️_Live_Demo-catan--map--generator-c9973a?style=for-the-badge)](https://pero-grubac.github.io/catan-map-generator/)
 
 ---
 
