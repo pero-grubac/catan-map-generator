@@ -2,107 +2,110 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catan Map Generator</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catan Map Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1208">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
 
 <body>
 
-    <header>
-        <h1>⚓ CATAN MAP GENERATOR</h1>
-        <p>Random map generator with placement rules</p>
-    </header>
+  <header>
+    <h1>CATAN MAP GENERATOR</h1>
+    <p>Random map generator with placement rules</p>
+  </header>
 
-    <main>
+  <main>
 
-        <div class="controls">
+    <div class="controls">
 
-            <div class="control-group">
-                <h3>Map Size</h3>
-                <div class="tab-row">
-                    <button id="tab-standard" class="tab active" onclick="setMode('standard')">Standard (3-4)</button>
-                    <button id="tab-extended" class="tab" onclick="setMode('extended')">Extended (5-6)</button>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <h3>Placement Rules</h3>
-                <label class="checkbox-row">
-                    <input type="checkbox" id="no-68-adjacent" checked>
-                    No adjacent <span class="badge badge-red">6</span> <span class="badge badge-red">8</span>
-                </label>
-                <label class="checkbox-row">
-                    <input type="checkbox" id="no-212-adjacent" checked>
-                    No adjacent <span class="badge badge-amber">2</span> <span class="badge badge-amber">12</span>
-                </label>
-                <label class="checkbox-row">
-                    <input type="checkbox" id="no-same-resource-adjacent" checked>
-                    No same resource adjacent
-                </label>
-            </div>
-
-            <div class="control-group" style="justify-content: center;">
-                <h3>Action</h3>
-                <button class="btn-generate" onclick="generateMap()">🎲 Generate Map</button>
-            </div>
-
+      <div class="control-group">
+        <h3>Map Size</h3>
+        <div class="tab-row">
+          <button id="tab-standard" class="tab active" onclick="setMode('standard')">Standard (3-4)</button>
+          <button id="tab-extended" class="tab" onclick="setMode('extended')">Extended (5-6)</button>
         </div>
+      </div>
 
-        <div id="warning-container"></div>
-        <div class="info-bar" id="info-bar"></div>
+      <div class="control-group">
+        <h3>Placement Rules</h3>
+        <label class="checkbox-row">
+          <input type="checkbox" id="no-68-adjacent" checked>
+          No adjacent <span class="badge badge-red">6</span> <span class="badge badge-red">8</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="no-212-adjacent" checked>
+          No adjacent <span class="badge badge-amber">2</span> <span class="badge badge-amber">12</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="no-same-resource-adjacent" checked>
+          No same resource adjacent
+        </label>
+      </div>
 
-        <div class="map-wrapper">
-            <svg id="map-svg"></svg>
-        </div>
+      <div class="control-group" style="justify-content: center;">
+        <h3>Action</h3>
+        <button class="btn-generate" onclick="generateMap()">🎲 Generate Map</button>
+      </div>
 
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#3d6b1a;"></div>Forest
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#c8a840;"></div>Grain
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#7ab828;"></div>Sheep
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#7a5030;"></div>Rock
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#c86030;"></div>Clay
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#d8c878;"></div>Desert
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background:#e8a820;"></div>Gold
-            </div>
-            <div class="legend-item">
-                <div
-                    style="width:14px;height:14px;border-radius:50%;background:#cc1a1a;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">
-                    6</div>
-                Hot (6, 8)
-            </div>
-            <div class="legend-item">
-                <div
-                    style="width:14px;height:14px;border-radius:50%;background:#9a7020;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">
-                    2</div>
-                Rare (2, 12)
-            </div>
-        </div>
+    </div>
 
-    </main>
+    <div id="warning-container"></div>
 
-    <footer>
-        Catan is a registered trademark of Catan GmbH. This is an unofficial fan tool.
-    </footer>
+    <div class="map-wrapper">
+      <svg id="map-svg"></svg>
+    </div>
 
-    <script src="map.js"></script>
+    <div class="info-bar" id="info-bar"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#3d6b1a;"></div>Forest
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#c8a840;"></div>Grain
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7ab828;"></div>Sheep
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7a5030;"></div>Rock
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#c86030;"></div>Clay
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#d8c878;"></div>Desert
+      </div>
+      <div class="legend-item">
+        <div
+          style="width:14px;height:14px;border-radius:50%;background:#cc1a1a;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">
+          6</div>
+        Hot (6, 8)
+      </div>
+      <div class="legend-item">
+        <div
+          style="width:14px;height:14px;border-radius:50%;background:#9a7020;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">
+          2</div>
+        Rare (2, 12)
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    Catan is a registered trademark of Catan GmbH. This is an unofficial fan tool.
+  </footer>
+
+  <script src="map.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 
 </html>

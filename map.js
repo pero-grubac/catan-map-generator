@@ -1,12 +1,48 @@
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const RESOURCE_COLORS = {
-  forest: { fill: "#3d6b1a", stroke: "#2a4d0f", label: "Forest", icon: "🌲" },
-  fields: { fill: "#c8a840", stroke: "#a08020", label: "Grain", icon: "🌾" },
-  pasture: { fill: "#7ab828", stroke: "#558a10", label: "Sheep", icon: "🐑" },
-  mountains: { fill: "#7a5030", stroke: "#5a3820", label: "Rock", icon: "⛰️" },
-  hills: { fill: "#c86030", stroke: "#a04020", label: "Clay", icon: "🧱" },
-  desert: { fill: "#d8c878", stroke: "#b8a858", label: "Desert", icon: "🏜️" },
+  forest: {
+    fill: "#3d6b1a",
+    stroke: "#2a4d0f",
+    label: "Forest",
+    icon: "🌲",
+    img: "images/forest.png",
+  },
+  fields: {
+    fill: "#c8a840",
+    stroke: "#a08020",
+    label: "Grain",
+    icon: "🌾",
+    img: "images/grain.png",
+  },
+  pasture: {
+    fill: "#7ab828",
+    stroke: "#558a10",
+    label: "Sheep",
+    icon: "🐑",
+    img: "images/sheep.png",
+  },
+  mountains: {
+    fill: "#7a5030",
+    stroke: "#5a3820",
+    label: "Rock",
+    icon: "⛰️",
+    img: "images/rock.png",
+  },
+  hills: {
+    fill: "#c86030",
+    stroke: "#a04020",
+    label: "Clay",
+    icon: "🧱",
+    img: "images/clay.png",
+  },
+  desert: {
+    fill: "#d8c878",
+    stroke: "#b8a858",
+    label: "Desert",
+    icon: "🏜️",
+    img: "images/desert.png",
+  },
 };
 
 const NUM_DOTS = {
@@ -592,19 +628,29 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
 
     if (sh.isPort && sh.portType) {
       const pt = sh.portType;
-      const iconSz = Math.round(S * 0.36);
+      const iconSz = Math.round(S * 0.52);
+      // Use resource-specific image for 2:1 ports, port.png for 3:1
+      const imgSrc =
+        pt.label === "2:1"
+          ? (() => {
+              const resMap = {
+                "🌲": "images/forest.png",
+                "🌾": "images/grain.png",
+                "🐑": "images/sheep.png",
+                "⛰️": "images/rock.png",
+                "🧱": "images/clay.png",
+              };
+              return resMap[pt.icon] || "images/port.png";
+            })()
+          : "images/port.png";
       svg.appendChild(
-        svgEl(
-          "text",
-          {
-            x: cx,
-            y: cy - S * 0.1,
-            "text-anchor": "middle",
-            "dominant-baseline": "middle",
-            "font-size": `${iconSz}px`,
-          },
-          pt.icon,
-        ),
+        svgEl("image", {
+          href: imgSrc,
+          x: cx - iconSz / 2,
+          y: cy - iconSz / 2 - S * 0.1,
+          width: iconSz,
+          height: iconSz,
+        }),
       );
       svg.appendChild(
         svgEl(
@@ -660,7 +706,7 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
       }),
     );
 
-    const iconSz = Math.round(S * 0.38);
+    const iconSz = Math.round(S * 0.46);
 
     // Label top
     g.appendChild(
@@ -671,29 +717,25 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
           y: cy - S * 0.48,
           "text-anchor": "middle",
           "dominant-baseline": "central",
-          "font-family": "Crimson Pro, serif",
-          "font-size": `${Math.round(S * 0.165)}px`,
-          "font-weight": "500",
-          fill: "rgba(255,255,220,0.65)",
+          "font-family": "Oswald, sans-serif",
+          "font-size": `${Math.round(S * 0.2)}px`,
+          "font-weight": "700",
+          fill: "#1a0e04",
           "letter-spacing": "0.04em",
         },
         rc.label.toUpperCase(),
       ),
     );
 
-    // Icon centre
+    // Icon centre — PNG
     g.appendChild(
-      svgEl(
-        "text",
-        {
-          x: cx,
-          y: cy,
-          "text-anchor": "middle",
-          "dominant-baseline": "middle",
-          "font-size": `${iconSz}px`,
-        },
-        rc.icon,
-      ),
+      svgEl("image", {
+        href: rc.img,
+        x: cx - iconSz / 2,
+        y: cy - iconSz / 2 - S * 0.04,
+        width: iconSz,
+        height: iconSz,
+      }),
     );
 
     // Token bottom
