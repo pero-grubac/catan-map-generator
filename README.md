@@ -100,12 +100,46 @@ A perfect map scores 0. The score range shown in the UI (e.g. `−2 → −18`) 
 ## Project structure
 
 ```
-catan-map/
-├── index.html   # Markup and layout
-├── style.css    # Dark theme styling
-├── map.js       # All generation and rendering logic
-└── README.md
+catan-map-generator/
+├── index.html            # Markup and layout
+├── style.css             # Dark theme styling
+├── map.js                # All generation and rendering logic
+├── manifest.json         # PWA manifest (name, icons, display mode)
+├── service-worker.js     # Offline caching (cache-first strategy)
+├── README.md
+├── fonts/
+│   ├── cinzel-400.woff2
+│   ├── cinzel-600.woff2
+│   ├── cinzel-700.woff2
+│   ├── crimson-pro-400.woff2
+│   ├── crimson-pro-500.woff2
+│   ├── crimson-pro-600.woff2
+│   ├── oswald-400.woff2
+│   ├── oswald-600.woff2
+│   └── oswald-700.woff2
+├── icons/
+│   ├── icon-192.png      # PWA icon (home screen)
+│   └── icon-512.png      # PWA icon (splash screen)
+└── images/
+    ├── forest.png
+    ├── grain.png
+    ├── sheep.png
+    ├── rock.png
+    ├── clay.png
+    ├── desert.png
+    └── port.png           # 3:1 generic port icon
 ```
+
+<details>
+<summary>Why these folders?</summary>
+
+**`fonts/`** — All typefaces are served locally so the app works fully offline. No Google Fonts requests.
+
+**`icons/`** — PWA icons used by the browser for home screen shortcuts and splash screens.
+
+**`images/`** — Resource and port icons rendered inside the SVG hex tiles.
+
+</details>
 
 ---
 
@@ -120,13 +154,23 @@ catan-map/
 
 ## Local development
 
-No build step needed — open `index.html` directly in a browser, or serve with any static file server:
+No build step needed. A local HTTP server is required — Service Workers don't run on `file://`.
+
+**VS Code Live Server:**
+
+```
+Right-click index.html → Open with Live Server
+```
+
+Open `http://localhost:5500`
+
+**Python:**
 
 ```bash
-npx serve .
-# or
 python3 -m http.server 8080
 ```
+
+Open `http://localhost:8080`
 
 ---
 
