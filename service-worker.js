@@ -26,18 +26,28 @@ const ASSETS = [
   "./images/port.png",
 ];
 
-// Install: cache all assets
+const isLocal =
+  self.location.hostname === "localhost" ||
+  self.location.hostname === "127.0.0.1";
+
+// Install — skip caching on localhost
 self.addEventListener("install", (event) => {
+  if (isLocal) {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting()),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)),
   );
+  self.skipWaiting();
 });
 
-// Activate: delete old caches
+// Activate — delete old caches (skip on localhost)
 self.addEventListener("activate", (event) => {
+  if (isLocal) {
+    self.clients.claim();
+    return;
+  }
   event.waitUntil(
     caches
       .keys()
@@ -45,16 +55,24 @@ self.addEventListener("activate", (event) => {
         Promise.all(
           keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)),
         ),
-      )
-      .then(() => self.clients.claim()),
+      ),
   );
+  self.clients.claim();
 });
 
-// Fetch: cache-first strategy
+// Fetch — always network on localhost, cache-first on production
 self.addEventListener("fetch", (event) => {
+  if (isLocal) return;
   event.respondWith(
-    caches
-      .match(event.request)
-      .then((cached) => cached || fetch(event.request)),
+    caches.match(event.request).then((cached) => {
+      return (
+        cached ||
+        fetch(event.request).catch(() => {
+          if (event.request.destination === "document") {
+            return caches.match("./index.html");
+          }
+        })
+      );
+    }),
   );
 });
