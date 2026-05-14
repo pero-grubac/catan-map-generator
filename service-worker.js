@@ -1,4 +1,4 @@
-const CACHE_NAME = "catan-map-v2";
+const CACHE_NAME = "catan-map-v3";
 
 const ASSETS = [
   "./",

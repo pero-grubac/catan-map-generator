@@ -94,29 +94,29 @@ const EXT_NUMBERS = [
 // Each entry: { r, c } = land hex, edge = exposed side, type data fixed.
 
 const STD_PORT_POSITIONS = [
-  { r: 0, c: 0, edge: 5, label: "2:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 0, c: 1, edge: 0, label: "2:1", icon: "🌾", color: "#c8a840" }, // Grain
-  { r: 0, c: 2, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 1, c: 3, edge: 1, label: "2:1", icon: "⛰️", color: "#7a5030" }, // Rock
-  { r: 2, c: 4, edge: 2, label: "2:1", icon: "🌲", color: "#3d6b1a" }, // Forest
-  { r: 3, c: 3, edge: 2, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 4, c: 2, edge: 3, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 4, c: 0, edge: 3, label: "2:1", icon: "🐑", color: "#7ab828" }, // Sheep
-  { r: 2, c: 0, edge: 4, label: "2:1", icon: "🧱", color: "#c86030" }, // Clay
+  { r: 0, c: 1, edge: 5, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 0, c: 2, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 1, c: 3, edge: 1, label: "2:1", icon: "🧱", color: "#c86030" },
+  { r: 2, c: 4, edge: 2, label: "2:1", icon: "🌲", color: "#3d6b1a" },
+  { r: 4, c: 2, edge: 2, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 4, c: 1, edge: 3, label: "2:1", icon: "🌾", color: "#c8a840" },
+  { r: 3, c: 0, edge: 3, label: "2:1", icon: "⛰️", color: "#7a5030" },
+  { r: 2, c: 0, edge: 4, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 1, c: 0, edge: 5, label: "2:1", icon: "🐑", color: "#7ab828" },
 ];
 
 const EXT_PORT_POSITIONS = [
-  { r: 0, c: 0, edge: 5, label: "2:1", icon: "🌲", color: "#3d6b1a" }, // Forest
-  { r: 0, c: 1, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 0, c: 2, edge: 0, label: "2:1", icon: "🌾", color: "#c8a840" }, // Grain
-  { r: 1, c: 3, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 2, c: 4, edge: 1, label: "2:1", icon: "⛰️", color: "#7a5030" }, // Rock
-  { r: 3, c: 5, edge: 1, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 4, c: 4, edge: 2, label: "2:1", icon: "🐑", color: "#7ab828" }, // Sheep
-  { r: 5, c: 3, edge: 2, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 6, c: 2, edge: 3, label: "2:1", icon: "🧱", color: "#c86030" }, // Clay
-  { r: 6, c: 0, edge: 3, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
-  { r: 3, c: 0, edge: 4, label: "3:1", icon: "⛵", color: "#2a5f8a" }, // 3:1 generic
+  { r: 0, c: 0, edge: 5, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 0, c: 1, edge: 0, label: "2:1", icon: "🐑", color: "#7ab828" },
+  { r: 1, c: 3, edge: 0, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 3, c: 5, edge: 1, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 4, c: 4, edge: 2, label: "2:1", icon: "🧱", color: "#c86030" },
+  { r: 5, c: 3, edge: 2, label: "2:1", icon: "🐑", color: "#7ab828" },
+  { r: 6, c: 2, edge: 3, label: "2:1", icon: "🌲", color: "#3d6b1a" },
+  { r: 6, c: 0, edge: 3, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 3, c: 0, edge: 5, label: "2:1", icon: "⛰️", color: "#7a5030" },
+  { r: 4, c: 0, edge: 4, label: "3:1", icon: "⛵", color: "#2a5f8a" },
+  { r: 5, c: 0, edge: 4, label: "2:1", icon: "🌾", color: "#c8a840" },
 ];
 
 // Outward angle (degrees) for each edge direction
