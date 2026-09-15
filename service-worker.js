@@ -1,4 +1,4 @@
-const CACHE_NAME = "catan-map-v3";
+const CACHE_NAME = "catan-map-v4";
 
 const ASSETS = [
   "./",
@@ -17,13 +17,6 @@ const ASSETS = [
   "./fonts/oswald-700.woff2",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./images/forest.png",
-  "./images/grain.png",
-  "./images/sheep.png",
-  "./images/rock.png",
-  "./images/clay.png",
-  "./images/desert.png",
-  "./images/port.png",
 ];
 
 const isLocal =

@@ -27,11 +27,10 @@
   - No adjacent `6` and `8` tokens
   - No adjacent `2` and `12` tokens
   - No same resource type touching
-- 🧠 **Smart generation** — backtracking algorithm guarantees constraint satisfaction; no arbitrary retry limits
-- 🏆 **Scoring system** — generates multiple valid candidates and picks the most balanced one
-- ⚓ **Fixed ports** — official Catan port layout, same positions every game
-- ⚡ **Non-blocking UI** — generation runs asynchronously; page never freezes
-- 📱 **PWA** — installable on mobile and desktop, works fully offline
+- **Smart generation** — backtracking algorithm guarantees constraint satisfaction; no arbitrary retry limits
+- **Scoring system** — generates multiple valid candidates and picks the most balanced one
+- **Fixed ports** — official Catan port layout, same positions every game
+- **Non-blocking UI** — generation runs asynchronously; page never freezes
 
 ---
 
@@ -106,46 +105,41 @@ Up to 8 valid candidates are collected within the time budget. Each is scored an
 | Adjacent same resource | −20 |
 | Unbalanced probability spread | −variance |
 
-A perfect map scores `0`. The score range shown in the UI (e.g. `−2 → −18`) tells you how much variation there was between the best and worst candidates found in that run.
+A perfect map scores 0. The score range shown in the UI (e.g. `−2 → −18`) tells you how much variation there was between the best and worst candidates found in that run.
 
 ---
 
-## 📁 Project structure
+## Project structure
 
-| File | Purpose |
-|------|---------|
-| `index.html` | Markup and layout |
-| `style.css` | Dark theme styling |
-| `map.js` | All generation and rendering logic |
-| `manifest.json` | PWA manifest (name, icons, display mode) |
-| `service-worker.js` | Offline caching (cache-first strategy) |
-
-<details>
-<summary>📁 fonts/</summary>
-
-All typefaces served locally — no Google Fonts requests, works fully offline.
-
-`cinzel-400.woff2`, `cinzel-600.woff2`, `cinzel-700.woff2`
-`crimson-pro-400.woff2`, `crimson-pro-500.woff2`, `crimson-pro-600.woff2`
-`oswald-400.woff2`, `oswald-600.woff2`, `oswald-700.woff2`
-
-</details>
+```
+catan-map-generator/
+├── index.html            # Markup and layout
+├── style.css             # Dark theme styling
+├── map.js                # All generation and rendering logic (incl. inline SVG resource icons)
+├── manifest.json         # PWA manifest (name, icons, display mode)
+├── service-worker.js     # Offline caching (cache-first strategy)
+├── README.md
+├── fonts/
+│   ├── cinzel-400.woff2
+│   ├── cinzel-600.woff2
+│   ├── cinzel-700.woff2
+│   ├── crimson-pro-400.woff2
+│   ├── crimson-pro-500.woff2
+│   ├── crimson-pro-600.woff2
+│   ├── oswald-400.woff2
+│   ├── oswald-600.woff2
+│   └── oswald-700.woff2
+└── icons/
+    ├── icon-192.png      # PWA icon (home screen)
+    └── icon-512.png      # PWA icon (splash screen)
+```
 
 <details>
 <summary>🔷 icons/</summary>
 
 PWA icons used by the browser for home screen shortcuts and splash screens.
 
-`icon-192.png`, `icon-512.png`
-
-</details>
-
-<details>
-<summary>🖼️ images/</summary>
-
-Resource and port icons rendered inside the SVG hex tiles.
-
-`forest.png`, `grain.png`, `sheep.png`, `rock.png`, `clay.png`, `desert.png`, `port.png`
+**Resource & port icons** — rendered as inline SVG paths directly in `map.js` (procedural fractal-noise tile textures plus real illustrated icons), no image files needed.
 
 </details>
 
@@ -184,6 +178,12 @@ Open `http://localhost:8080`
 
 - **Extended + "no same resource"** — with 6 copies of 3 resource types on a dense 30-hex grid, backtracking is feasible but generation time varies. If it exceeds the time budget, a best-effort result is shown with a warning.
 - The generator uses client-side JS only — no server, no dependencies, no build tooling.
+
+---
+
+## Credits
+
+Resource and port icons (pine tree, wheat, sheep, mountains, clay brick, desert, sailboat) are by [Lorc](https://lorcblog.blogspot.com/) and [Delapouite](https://delapouite.com/), from [game-icons.net](https://game-icons.net/), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 ---
 
