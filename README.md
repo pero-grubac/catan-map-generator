@@ -16,20 +16,21 @@
 
 ## 📌 Project Overview
 
-**Catan Map Generator** is a random map generator for the Catan board game. It supports both the standard 3-4 player map and the 5-6 player extension, with configurable placement rules and a scoring system that picks the most balanced result from multiple valid candidates. Runs entirely in the browser — no backend, no dependencies, no build step. Works offline as a PWA.
+**Catan Map Generator** is a random map generator for the Catan board game. It supports the standard 3-4 player map, the Cities & Knights 3-4 player board, and the 5-6 player extension, with configurable placement rules and a scoring system that picks the most balanced result from multiple valid candidates. Runs entirely in the browser — no backend, no dependencies, no build step. Works offline as a PWA.
 
 ---
 
 ## ✨ Features
 
-- 🗺️ **Two map sizes** — Standard (19 land tiles, 3-4 players) and Extended (30 land tiles, 5-6 players)
+- 🗺️ **Three map modes** — Standard (19 land tiles, 3-4 players), Cities & Knights (same 19 tiles, its own harbours and barbarian track) and Extended (30 land tiles, 5-6 players)
+- 🏴‍☠️ **Cities & Knights board** — the harbour layout of the C&K frame, plus the barbarian ship track drawn along the east coast (pirate ship at both ends, wave crests between)
 - ⚙️ **Placement rules** (each toggleable):
   - No adjacent `6` and `8` tokens
   - No adjacent `2` and `12` tokens
   - No same resource type touching
 - **Smart generation** — backtracking algorithm guarantees constraint satisfaction; no arbitrary retry limits
 - **Scoring system** — generates multiple valid candidates and picks the most balanced one
-- **Fixed ports** — official Catan port layout, same positions every game
+- **Fixed ports** — official Catan port layout per mode, same positions every game
 - **Non-blocking UI** — generation runs asynchronously; page never freezes
 
 ---
@@ -70,7 +71,7 @@ Number tokens: `2×(2,12), 3×(3,4,5,9,10,11), 3×(6,8)` — 28 tokens total
 
 ### Grid construction
 
-The map is built as a complete hex grid — a fixed sea ring surrounding the land hexes. Sea hex positions are computed automatically: for each land hex, all six pixel-space neighbours that aren't land become sea hexes (duplicates deduplicated by rounded pixel key). Ports are placed at fixed sea hex positions following the official Catan layout — same port, same spot, every time.
+The map is built as a complete hex grid — a fixed sea ring surrounding the land hexes. Sea hex positions are computed automatically: for each land hex, all six pixel-space neighbours that aren't land become sea hexes (duplicates deduplicated by rounded pixel key). Ports are placed at fixed sea hex positions following the official Catan layout — same port, same spot, every time. In Cities & Knights mode the barbarian track is not made of extra hexes: its marks are placed at fixed offsets inside the existing east-coast sea hexes, each one checked to lie fully inside its hex and clear of the harbour icon.
 
 ### Generation pipeline
 
@@ -183,7 +184,7 @@ Open `http://localhost:8080`
 
 ## Credits
 
-Resource and port icons (pine tree, wheat, sheep, mountains, clay brick, desert, sailboat) are by [Lorc](https://lorcblog.blogspot.com/) and [Delapouite](https://delapouite.com/), from [game-icons.net](https://game-icons.net/), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+Resource, port and barbarian-track icons (pine tree, wheat, sheep, mountains, clay brick, desert, sailboat, galleon, wave crest) are by [Lorc](https://lorcblog.blogspot.com/) and [Delapouite](https://delapouite.com/), from [game-icons.net](https://game-icons.net/), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 ---
 

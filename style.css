@@ -259,7 +259,16 @@ main {
   cursor: pointer;
   transition: all 0.18s;
   box-shadow: 0 0 16px rgba(201, 151, 58, 0.2);
-  align-self: center;
+  /* own row under the two control cards, as wide as both (2 × 280px + 1rem gap) */
+  flex: 1 1 calc(2 * 280px + 1rem);
+  max-width: calc(2 * 280px + 1rem);
+}
+
+/* forces the Generate button onto its own row in the wrapping .controls flex */
+.controls-break {
+  flex-basis: 100%;
+  height: 0;
+  margin: -0.5rem 0 0;
 }
 
 .btn-generate:hover {

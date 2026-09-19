@@ -105,13 +105,63 @@ const EXT_PORT_POSITIONS = [
   { r: 5, c: 0, edge: 4, label: "2:1", res: "fields" },
 ];
 
+// Cities & Knights (3-4p): same 19-hex board as Standard, but the printed
+// frame has a different harbour layout.
+const CK_PORT_POSITIONS = [
+  { r: 0, c: 1, edge: 5, label: "2:1", res: "mountains" },
+  { r: 0, c: 2, edge: 1, label: "2:1", res: "forest" },
+  // inset: shifts the harbour icon toward the shore (in hex radii) to leave
+  // room for the barbarian track on its seaward side
+  { r: 3, c: 3, edge: 1, label: "3:1", res: null, inset: 0.22 },
+  { r: 4, c: 2, edge: 2, label: "3:1", res: null },
+  { r: 4, c: 1, edge: 3, label: "2:1", res: "fields" },
+  { r: 4, c: 0, edge: 3, label: "3:1", res: null },
+  { r: 3, c: 0, edge: 4, label: "2:1", res: "pasture" },
+  { r: 2, c: 0, edge: 4, label: "3:1", res: null },
+  { r: 1, c: 0, edge: 5, label: "2:1", res: "hills" },
+];
+
+// Barbarian track (Cities & Knights): a pirate ship at both ends (it starts at
+// the far end and sails toward the coast) and 6 waves between, drawn as marks
+// inside the existing sea hexes along the east coast (on the offshore side of
+// the harbour there), so no extra hexes are needed. Offsets are in hex-widths
+// (DX) from the centre of the sea hex east of BARBARIAN_START.
+// Positions are chosen so each mark (at its drawn size) lies fully inside one
+// sea hex and clear of the harbour icon in the hex east of (3,3).
+const BARBARIAN_START = { r: 2, c: 4 };
+const BARBARIAN_MARKS = [
+  { x: 0.235, y: -0.207 },
+  { x: 0.343, y: 0.018 },
+  { x: 0.063, y: 0.316 },
+  { x: -0.153, y: 0.722 },
+  { x: -0.289, y: 1.083 },
+  { x: -0.731, y: 1.534 },
+  { x: -0.758, y: 1.768 },
+  { x: -0.938, y: 2.039 },
+];
+// Pirate-flag crimson with a cream rim: stands out on the blue sea and is
+// distinct from the white harbour icons and the number tokens on land.
+const BARBARIAN_COLORS = { fill: "#b8322a", rim: "#f3e3c3" };
+
+const PORT_POSITIONS = {
+  standard: STD_PORT_POSITIONS,
+  knights: CK_PORT_POSITIONS,
+  extended: EXT_PORT_POSITIONS,
+};
+
+const MODE_LABELS = {
+  standard: "Standard (3-4p)",
+  knights: "Cities & Knights (3-4p)",
+  extended: "Extended (5-6p)",
+};
+
 // Outward angle (degrees) for each edge direction
 const EDGE_ANGLE = [30, 90, 150, 210, 270, 330]; // NE,E,SE,SW,W,NW
 
 // ─── Grid ─────────────────────────────────────────────────────────────────────
 
 function getRowCounts(mode) {
-  return mode === "standard" ? [3, 4, 5, 4, 3] : [3, 4, 5, 6, 5, 4, 3];
+  return mode === "extended" ? [3, 4, 5, 6, 5, 4, 3] : [3, 4, 5, 4, 3];
 }
 
 function buildGrid(rowCounts) {
@@ -431,6 +481,9 @@ function setMode(mode) {
     .querySelectorAll(".tab")
     .forEach((t) => t.classList.remove("active"));
   document.getElementById("tab-" + mode).classList.add("active");
+  document
+    .querySelectorAll(".legend-knights")
+    .forEach((e) => (e.style.display = mode === "knights" ? "" : "none"));
   generateMap();
 }
 
@@ -448,8 +501,8 @@ function generateMap() {
   const nc = buildNeighborCache(hexes, rowCounts);
 
   const available =
-    currentMode === "standard" ? { ...STD_RESOURCES } : { ...EXT_RESOURCES };
-  const numbers = currentMode === "standard" ? STD_NUMBERS : EXT_NUMBERS;
+    currentMode === "extended" ? { ...EXT_RESOURCES } : { ...STD_RESOURCES };
+  const numbers = currentMode === "extended" ? EXT_NUMBERS : STD_NUMBERS;
 
   setGenerating(true);
 
@@ -577,7 +630,7 @@ function buildDefs() {
 }
 
 // Real resource icons (single-path silhouettes) — pine-tree, wheat, sheep,
-// mountains, clay-brick, desert & sailboat by lorc / delapouite, sourced from
+// mountains, clay-brick, desert, sailboat, galleon & wave crest by lorc / delapouite, sourced from
 // game-icons.net (CC BY 3.0, https://creativecommons.org/licenses/by/3.0/).
 // Each is a 512×512 viewBox path; drawResourceIcon scales+positions it inline.
 const RESOURCE_ICON_PATHS = {
@@ -595,24 +648,36 @@ const RESOURCE_ICON_PATHS = {
     "M481.5 21.96l-45.6 12.33c2.6 5.3 4.3 11.14 4.9 17.3l45.3-12.25-4.6-17.38zm-279.3.67L200 40.51l143 17.04V56c0-5.7 1-11.17 2.8-16.26L202.2 22.63zM392 25c-17.2 0-31 13.77-31 31s13.8 31 31 31 31-13.77 31-31-13.8-31-31-31zm-43.8 52.81l-74.5 54.89 10.6 14.4L359 92.12c-4.5-4.05-8.1-8.9-10.8-14.31zm73.9 16.81c-4.8 3.7-10.2 6.58-16.1 8.28l38.9 67.2 15.6-9-38.4-66.48zm-294.2.58c-.3.01-.5.02-.7.04-3.3.32-7.7 3.47-11.8 8.76-2.5 20.1-2.5 42.6.3 62.6l1.7 11.8-11.9-1.7c-5.1-.7-7.11-.8-12.91-.4l-8.75.6-.8-8.8c-.8-8.6-3.77-20.7-7.11-29.3-3.41-2.9-5.73-3.4-7.78-3.2-1.85.3-4.44 1.5-7.51 4.5 1.81 18.8 3.36 36.9 8.7 54.9 9.63 4.2 23.42 6.4 36.96 5.7l10-.5-.6 10c-4.3 73.9-6.1 142.6-1 215.8 8.1 3.7 15.8 5.5 21.9 5.5 5.8 0 9.6-1.5 12-3.5 4.5-42.7.6-83.1-1.8-124.8l-.5-9.4 9.4-.1c10.7-.1 19.7-2.3 25.9-5.4 6-2.8 8.8-6.4 9.3-7.8 5.6-38.6 9.4-72.6 7.2-109.3-.1-2.2-.7-2.9-1.8-3.8-1-.9-3-1.7-5.2-1.8-2.2-.2-4.6.3-6.1 1.1s-2 1.5-2.3 2.4c-9.4 31.1-17.3 62-18.6 94.7v.1l-18-.9v-.1c2.7-51 .6-104.7-2.6-156.2-7.2-9.39-12.2-11.54-15.6-11.5zm239.6 3.2l-53.9 142.9 16.8 6.4 54-143.3c-6-.9-11.8-3-16.9-6zm66.4 111.7v47.8l-7.6-1.8-4-28.2-17.8 2.6 5.8 40.4 23.6 5.5V297h-233c-3.1 3-7.1 5.5-11.4 7.6-6.8 3.2-15 5.6-24.2 6.6 2.5 39.2 5.8 78.9.9 121.7l-.2 2.4-1.5 2c-6.4 8.5-17 12.2-27.9 12.2-11 0-22.9-3.3-34.8-9.7l-4.41-2.3-.36-4.9C93.6 386.2 93 341.8 94.04 297H25v190h462V297h-35.1v-38.5l23-5.3 4.8-24.8-17.6-3.4-2.6 13.2-7.6 1.7v-29.8h-18z",
   port:
     "M199.256 74.5v285H27.744l25.998 78H380.255l104-78h-267v-285h-18zm18 18c36.787 88.85 64.94 216 0 250h208c22-34-11.905-164.76-208-250zm-36 0c-33.046 69.333-50 200-144 250h144v-250z",
+  pirate:
+    "M222.03 20.53v58.25L165.938 99l6.344 17.563 49.75-17.938v96.156l-87.155 33.845 6.75 17.406 80.406-31.218v141.97h-61.655l-1.438-7.594-4.687-25.063H95.812v-142.47l60.157-21.686-6.345-17.595-53.813 19.406V78.345H77.126v90.187l-52 18.75 6.344 17.564 45.655-16.47v135.75H26.437c5.565 54.4 27.327 108.08 66.782 143.595H375.56c9.543-51.545 39.83-95.146 73.688-136.44h-.063L494.594 299l-10.813-15.25-66.874 47.53H367.25V219.314l62.188-22.438-6.313-17.563-55.875 20.157v-67.032h-18.688v73.78l-49.937 18 6.313 17.563 43.625-15.75v121.595l-4.907 5.844-2.812 3.31H240.72V207.564l87.155-33.844-6.78-17.407-80.376 31.218V91.907l56.06-20.22-6.342-17.592-49.72 17.937v-51.5H222.03z",
+  wavecrest:
+    "M298.844 21.47c-19.177.074-37.7 9.793-43.156 29.06-21.613-18.783-57.038-5.957-57.97 13.907-.397.11-.79.234-1.187.344-12.147-4.116-20.077-.304-24.186 7.44-18.52-14.45-44.42-1.614-51.188 19.218-14.786-17.19-42.58 4.042-30.406 25.124.188.327.397.63.594.938a341.266 341.266 0 0 0-14.063 11.28 51.335 51.335 0 0 0-23.56-5.155c-13.145.303-26.367 5.78-36.19 17.625v118.063c6.726 4.154 16.51 6.48 24.94 5.375a372.038 372.038 0 0 0-16.75 58.437c-.277.918-.546 1.85-.782 2.813-.782 3.182-1.24 6.21-1.407 9.093-9.176 55.403-5.31 111.628 13.095 161.126H56.72c-15.91-39.335-21.726-84.3-18.095-129.875 20.554 13.602 55.617 7.05 63.563-25.31 7.245-29.515-15.273-47.982-38.126-47.876-4.062.02-8.143.638-12.062 1.875 5.06-17.025 11.418-33.773 19.063-49.94a341.501 341.501 0 0 1 19.75-36.03c13.37 8.93 38.33 6.824 41.25-21 1.343 4.814 9.112 7.514 15.656 7.438-10.532 23.45-18.023 48.2-22.564 73.343-8.506 47.1-6.837 95.784 4.625 140.564-22.214 3.28-24.636 38.295 1.22 38.844 4.18.087 7.748-.735 10.72-2.188 7.164 17.84 16.073 34.685 26.686 50.156h23.156c-45.083-57.982-62.535-143.55-48-224.03.185-1.024.4-2.042.594-3.063 12.583 16.662 30.995 16.28 44.313 7.156.098 7.433.444 14.858 1.06 22.25 6.366 76.193 39.422 149.527 91.626 197.686h29.156c-57.272-43.11-95.5-119.53-102.156-199.22-5.615-67.22 10.893-136.265 56.125-190.155-22.662 48.81-28.814 101.335-22.405 152.032-10.69 7.01-16.59 20.936-7.063 35.813 4.65 7.262 10.705 10.994 16.938 12.125a330.085 330.085 0 0 0 6.72 20.78c25.606 71.122 74.834 133.122 135.936 168.626h43.28c-69.03-26.022-128.378-90.037-158.405-166.47 12.857.64 25.67-14.788 16.658-29.686-3.872-6.39-9.452-9.026-14.97-9 3.396-7.17 3.52-15.913-2-24.53-4.954-7.738-11.826-11.5-18.874-12.25-5.378-44.973-.098-91.102 18.812-134.345l.906 1.75C273.37 181.75 290.925 240.357 322.625 289c10 15.346 21.402 29.735 33.906 42.938a19.978 19.978 0 0 0-3.592-.313c-19.654.194-25.004 31.01-1.75 36.72 15.508 3.807 23.524-8.896 21.687-20.408 34.925 31.702 76.562 54.554 119.906 64.094v-19.217c-59.818-14.523-117.576-57.376-154.5-114.032-24.12-37.01-39.39-79.608-41.092-124 4.408-66.014 98.113-44.375 115.656-5.155-6.523-34.758-23.54-58.183-46.094-73.188 15.407-13.958-4.283-37.503-20.813-26.156-8.08-19.323-27.917-28.886-47.093-28.81zm-138.625 2c-2.13.103-4.395.752-6.72 2.03-16.766 9.213-4.997 35.847 12.75 26.094 15.18-8.345 7.774-27.85-5.125-28.125-.3-.008-.602-.016-.906 0zm264.155 22.874c-19.126-.404-22.245 28.57-2 29 20.526.43 21.4-28.59 2-29zM53.5 75.687C43.338 76.05 33.672 88.067 40.562 100c10.167 17.61 36.35 2.13 25.594-16.5-3.315-5.743-8.037-7.977-12.656-7.813zm69.906 42.282c.402.812.812 1.623 1.28 2.436 2.326 4.027 5.03 7.26 7.97 9.813a320.203 320.203 0 0 0-29.875 30.936 44.622 44.622 0 0 0-10.25-20.78c6.11-5.04 12.437-9.807 18.907-14.376 4.71-1.154 9.05-4.033 11.97-8.03zM181 123.062a46.38 46.38 0 0 0 7.063 7.374 272.932 272.932 0 0 0-11.97 15.5 37.77 37.77 0 0 0-10.593-10.812 36.763 36.763 0 0 0 15.5-12.063zm240 51.593c-25.802.693-29.64 40.193-1.594 40.78 28.89.61 30.117-40.2 2.813-40.78-.422-.01-.81-.01-1.22 0zm-244.188 4.625c3.198 9.806 12.542 14.786 22.125 13.69a285.615 285.615 0 0 0-5.718 25.124c-6.353-6.258-13.926-9.102-21.5-9.25-3.403-.067-6.787.43-10.064 1.375a276.48 276.48 0 0 1 15.156-30.94zm280.47 42.22c-18.49-.39-21.542 27.59-1.97 28 19.844.417 20.725-27.608 1.97-28z",
 };
 
 // Draws a real icon (see RESOURCE_ICON_PATHS) centred at (cx, cy) with the
 // given pixel width `w` (the source is a 512×512 square, scaled to fit).
-function drawResourceIcon(resource, cx, cy, w, color) {
+function drawResourceIcon(resource, cx, cy, w, color, outline) {
   const d = RESOURCE_ICON_PATHS[resource] || RESOURCE_ICON_PATHS.port;
   const scale = w / 512;
-  return svgEl("path", {
+  const attrs = {
     d,
     fill: color,
     filter: "url(#icon-shadow)",
     transform: `translate(${cx - w / 2}, ${cy - w / 2}) scale(${scale})`,
-  });
+  };
+  if (outline) {
+    // thin light rim so a dark icon stays readable on the dark sea
+    attrs.stroke = outline;
+    attrs["stroke-width"] = 14; // path units, scaled with the icon
+    attrs["stroke-linejoin"] = "round";
+    attrs["paint-order"] = "stroke";
+  }
+  return svgEl("path", attrs);
 }
 
 function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
   const svg = document.getElementById("map-svg");
-  const S = currentMode === "standard" ? 64 : 54;
+  const S = currentMode === "extended" ? 54 : 64;
   const DX = Math.sqrt(3) * S;
   const DY = 1.5 * S;
   const PAD = S * 1.1; // enough room so top sea hexes aren't clipped
@@ -653,8 +718,7 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
   }
 
   // Assign fixed port types directly from position definitions
-  const portPositions =
-    currentMode === "standard" ? STD_PORT_POSITIONS : EXT_PORT_POSITIONS;
+  const portPositions = PORT_POSITIONS[currentMode];
 
   portPositions.forEach((pos) => {
     const lp =
@@ -666,6 +730,18 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
       seaMap.get(k).portType = pos; // pos itself carries label, icon, color
     }
   });
+
+  // Barbarian track origin: the sea hex east of BARBARIAN_START
+  let barbarianOrigin = null;
+  if (currentMode === "knights") {
+    const startIdx = hexes.findIndex(
+      (h) => h.r === BARBARIAN_START.r && h.c === BARBARIAN_START.c,
+    );
+    barbarianOrigin = {
+      x: landPixels[startIdx].x + NEIGH_OFFSETS[0].x,
+      y: landPixels[startIdx].y + NEIGH_OFFSETS[0].y,
+    };
+  }
 
   // Compute bounding box of all hex CENTRES, then add hex radius as margin
   const allX = [...landPixels, ...seaMap.values()].map((h) => h.x);
@@ -728,14 +804,21 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
 
     if (sh.isPort && sh.portType) {
       const pt = sh.portType;
+      // optionally nudge the icon + label toward the shore (see pt.inset)
+      let px = cx;
+      if (pt.inset) {
+        const toSea = NEIGH_OFFSETS[EDGE_TO_NEIGH[pt.edge]];
+        const len = Math.hypot(toSea.x, toSea.y);
+        px = cx - (toSea.x / len) * pt.inset * S;
+      }
       svg.appendChild(
-        drawResourceIcon(pt.res, cx, cy - S * 0.14, S * 0.62, "#eef6fb"),
+        drawResourceIcon(pt.res, px, cy - S * 0.14, S * 0.62, "#eef6fb"),
       );
       svg.appendChild(
         svgEl(
           "text",
           {
-            x: cx,
+            x: px,
             y: cy + S * 0.38,
             "text-anchor": "middle",
             "dominant-baseline": "central",
@@ -749,6 +832,25 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
         ),
       );
     }
+  }
+
+  // Barbarian track marks (drawn over the sea hexes they sit in)
+  if (barbarianOrigin) {
+    const last = BARBARIAN_MARKS.length - 1;
+    const { fill, rim } = BARBARIAN_COLORS; // ships only; the wave crests are white
+    BARBARIAN_MARKS.forEach((o, i) => {
+      const x = barbarianOrigin.x + o.x * DX + offX;
+      const y = barbarianOrigin.y + o.y * DX + offY;
+      if (i === 0 || i === last) {
+        // pirate galleon at both ends: where the ship starts and where it attacks
+        svg.appendChild(drawResourceIcon("pirate", x, y, S * 0.42, fill, rim));
+      } else {
+        // a wave crest the ship sails through, white like the harbour icons
+        svg.appendChild(
+          drawResourceIcon("wavecrest", x, y, S * 0.42, "#eef6fb"),
+        );
+      }
+    });
   }
 
   // ── 2. Draw land hexes on top ──
@@ -872,8 +974,7 @@ function renderMap({ hexes, rowCounts, nc, resourceArr, numberArr }) {
 // ─── Info & warnings ──────────────────────────────────────────────────────────
 
 function renderInfo({ attempts, elapsed, scoreRange, usedFallback }) {
-  const mode =
-    currentMode === "standard" ? "Standard (3-4p)" : "Extended (5-6p)";
+  const mode = MODE_LABELS[currentMode];
   const timeStr =
     elapsed < 1000 ? `${elapsed}ms` : `${(elapsed / 1000).toFixed(1)}s`;
   const status = usedFallback
