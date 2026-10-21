@@ -1,10 +1,15 @@
-const CACHE_NAME = "catan-map-v4";
+const CACHE_NAME = "catan-map-v5";
 
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
-  "./map.js",
+  "./src/main.js",
+  "./src/constants.js",
+  "./src/grid.js",
+  "./src/generator.js",
+  "./src/render.js",
+  "./src/icons.js",
   "./manifest.json",
   "./fonts/cinzel-400.woff2",
   "./fonts/cinzel-600.woff2",

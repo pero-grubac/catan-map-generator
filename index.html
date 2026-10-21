@@ -26,9 +26,9 @@
       <div class="control-group">
         <h3>Map Size</h3>
         <div class="tab-row">
-          <button id="tab-standard" class="tab active" onclick="setMode('standard')">Standard (3-4)</button>
-          <button id="tab-knights" class="tab" onclick="setMode('knights')">Cities &amp; Knights (3-4)</button>
-          <button id="tab-extended" class="tab" onclick="setMode('extended')">Extended (5-6)</button>
+          <button id="tab-standard" class="tab active" data-mode="standard">Standard (3-4)</button>
+          <button id="tab-knights" class="tab" data-mode="knights">Cities &amp; Knights (3-4)</button>
+          <button id="tab-extended" class="tab" data-mode="extended">Extended (5-6)</button>
         </div>
       </div>
 
@@ -49,7 +49,7 @@
       </div>
 
       <div class="controls-break"></div>
-      <button class="btn-generate" onclick="generateMap()">🎲 Generate Map</button>
+      <button class="btn-generate">🎲 Generate Map</button>
 
     </div>
 
@@ -104,7 +104,7 @@
     Catan is a registered trademark of Catan GmbH. This is an unofficial fan tool.
   </footer>
 
-  <script src="map.js"></script>
+  <script type="module" src="src/main.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js');

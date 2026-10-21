@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build / deploy output
+_site/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors (keep shared VS Code settings)
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp

@@ -7,6 +7,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2024-f7df1e?style=flat-square&logo=javascript&logoColor=black)
 ![PWA](https://img.shields.io/badge/PWA-offline--ready-5a0fc8?style=flat-square&logo=pwa&logoColor=white)
 ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-deployed-4c1?style=flat-square&logo=github&logoColor=white)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/pero-grubac/catan-map-generator/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/pero-grubac/catan-map-generator/actions/workflows/deploy.yml)
 
 [![Live Demo](https://img.shields.io/badge/🗺️_Live_Demo-catan--map--generator-c9973a?style=for-the-badge)](https://pero-grubac.github.io/catan-map-generator/)
 
@@ -32,6 +33,55 @@
 - **Scoring system** — generates multiple valid candidates and picks the most balanced one
 - **Fixed ports** — official Catan port layout per mode, same positions every game
 - **Non-blocking UI** — generation runs asynchronously; page never freezes
+
+---
+
+## 📦 Installation
+
+The app itself has no dependencies and no build step. You only need:
+
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) 20 or newer (for the tests and the local server; the app does not need it)
+
+```bash
+git clone https://github.com/pero-grubac/catan-map-generator.git
+cd catan-map-generator
+```
+
+There is nothing to `npm install`. The tests use Node's built-in test runner.
+
+---
+
+## ▶️ Usage
+
+### Run locally
+
+The app uses ES modules and a Service Worker, so it must be served over HTTP. Opening `index.html` from `file://` will not work. Any static server works:
+
+```bash
+npm start                      # npx serve on http://localhost:8080
+# or
+python -m http.server 8080     # then open http://localhost:8080
+# or, in VS Code: right-click index.html → Open with Live Server
+```
+
+On `localhost` the Service Worker skips caching, so changes show up on a normal reload.
+
+### Generate a map
+
+1. Pick a board: **Standard (3-4)**, **Cities & Knights (3-4)** or **Extended (5-6)**. A new map is generated straight away.
+2. Turn the placement rules on or off.
+3. Click **🎲 Generate Map** to roll a new layout with the current rules.
+
+The info bar shows the mode, the generation time, the score range of the candidates and whether the result meets every rule. If no fully valid map is found within the time budget, a best-effort map is shown with a warning.
+
+### Run the tests
+
+```bash
+npm test
+```
+
+The tests cover the hex grid (neighbours checked against the real hex geometry), the generator (tile and token counts, all three placement rules over many random runs, scoring and the fallback path), the port and barbarian-track definitions, and the Service Worker's list of cached files.
 
 ---
 
@@ -116,10 +166,21 @@ A perfect map scores 0. The score range shown in the UI (e.g. `−2 → −18`) 
 catan-map-generator/
 ├── index.html            # Markup and layout
 ├── style.css             # Dark theme styling
-├── map.js                # All generation and rendering logic (incl. inline SVG resource icons)
 ├── manifest.json         # PWA manifest (name, icons, display mode)
 ├── service-worker.js     # Offline caching (cache-first strategy)
+├── package.json          # npm scripts (test, start); no dependencies
 ├── README.md
+├── src/
+│   ├── main.js           # Entry point: UI state, event wiring, generation trigger
+│   ├── constants.js      # Tile/token sets, port layouts, barbarian track, colours
+│   ├── grid.js           # Hex grid and neighbour lookup
+│   ├── generator.js      # Backtracking placement, scoring, best-map selection
+│   ├── render.js         # SVG rendering, info bar and warnings
+│   └── icons.js          # Inline SVG icon paths (game-icons.net)
+├── tests/                # node:test suites for grid, generator and constants
+├── .github/workflows/
+│   ├── ci.yml            # Tests on pull requests and non-main branches
+│   └── deploy.yml        # Tests, then deploy to GitHub Pages on push to main
 ├── fonts/
 │   ├── cinzel-400.woff2
 │   ├── cinzel-600.woff2
@@ -140,45 +201,33 @@ catan-map-generator/
 
 PWA icons used by the browser for home screen shortcuts and splash screens.
 
-**Resource & port icons** — rendered as inline SVG paths directly in `map.js` (procedural fractal-noise tile textures plus real illustrated icons), no image files needed.
+**Resource & port icons** — rendered as inline SVG paths directly in `src/icons.js` (procedural fractal-noise tile textures plus real illustrated icons), no image files needed.
 
 </details>
 
 ---
 
-## 🚀 Deploy to GitHub Pages
+## 🚀 CI/CD
 
-1. Create a new repo (e.g. `catan-map-generator`)
-2. Push all files to the `main` branch root
-3. Go to **Settings → Pages → Source** → `main` / `/ (root)`
-4. Site will be live at `https://pero-grubac.github.io/catan-map-generator`
+Two GitHub Actions workflows live in `.github/workflows/`:
 
-> **After each update:** bump `CACHE_NAME` in `service-worker.js` (e.g. `v2` → `v3`) so returning users get fresh files.
+| Workflow | Runs on | What it does |
+|----------|---------|--------------|
+| `ci.yml` | Pull requests and pushes to branches other than `main` | `npm test` |
+| `deploy.yml` | Push to `main` (or a manual run) | `npm test`, then publishes the site to GitHub Pages only if the tests pass |
 
----
+The deploy publishes only the files the site needs (`index.html`, `style.css`, `manifest.json`, `service-worker.js`, `src/`, `fonts/`, `icons/`). Tests and tooling are not deployed.
 
-## 🛠️ Local development
+**One-time setup:** in the repo go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**. Leaving it on "Deploy from a branch" would publish `main` directly and skip the tests. The site is served at `https://pero-grubac.github.io/catan-map-generator`.
 
-No build step needed. A local HTTP server is required — Service Workers don't run on `file://`.
-
-**VS Code Live Server:**
-```
-Right-click index.html → Open with Live Server
-```
-Open `http://localhost:5500`
-
-**Python:**
-```bash
-python3 -m http.server 8080
-```
-Open `http://localhost:8080`
+> **After each release:** bump `CACHE_NAME` in `service-worker.js` (e.g. `v5` → `v6`) so returning users get the new files. If you add a file under `src/`, also add it to `ASSETS` there. A test fails if a module is missing from that list.
 
 ---
 
 ## ⚠️ Known limitations
 
 - **Extended + "no same resource"** — with 6 copies of 3 resource types on a dense 30-hex grid, backtracking is feasible but generation time varies. If it exceeds the time budget, a best-effort result is shown with a warning.
-- The generator uses client-side JS only — no server, no dependencies, no build tooling.
+- The generator uses client-side JS only — no server, no runtime dependencies, no build tooling.
 
 ---
 
