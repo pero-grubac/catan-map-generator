@@ -10,7 +10,7 @@
 ![SVG](https://img.shields.io/badge/SVG-rendering-FFB13B?logo=svg&logoColor=black)
 ![PWA](https://img.shields.io/badge/PWA-offline_ready-5A0FC8?logo=pwa&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/runtime_dependencies-0-2EA44F)
-![Tests](https://img.shields.io/badge/tests-54_unit_%C2%B7_12_e2e-2EA44F?logo=nodedotjs&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-54_unit_%C2%B7_14_e2e-2EA44F?logo=nodedotjs&logoColor=white)
 
 **Balanced random boards for Catan: standard, Cities & Knights and the 5–6 player extension, with placement rules and a scoring pass that keeps the fairest map.**
 
@@ -41,7 +41,7 @@
 - **Fixed ports** — official Catan port layout per mode, same positions every game
 - **Non-blocking UI** — generation runs asynchronously; page never freezes
 - 🔗 **Share links** — the URL always holds the map on screen; send it and the other person sees the exact same board
-- 🎯 **Fairness view** — optional overlay with the pip total of every intersection, plus best spot, number of 10+ spots and pips per resource in the info bar
+- 🎯 **Fairness view** — optional overlay with the pip total of every intersection, plus best spot, number of 10+ spots and pips per resource in the info bar; the **?** next to the toggle explains how it is counted
 - ⬇ **PNG export and print** — download the map as a 2× PNG (textures, icons, barbarian track and overlay included), or press Ctrl+P to print just the map and info bar on one page
 
 ---
@@ -358,10 +358,12 @@ Two GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | Runs on | What it does |
 |----------|---------|--------------|
-| `ci.yml` | Pull requests and pushes to branches other than `main` | Three parallel jobs: **unit** (`npm test`), **e2e** (Playwright smoke tests in Chromium, desktop and phone; the test output is uploaded when a test fails) and **lighthouse** (Lighthouse CI on exactly the files that get deployed; the report is uploaded as an artifact) |
-| `deploy.yml` | Push to `main` (or a manual run) | Unit and e2e tests, then publishes the site to GitHub Pages only if both pass |
+| `ci.yml` | Every push (including `main`) and pull request | Three parallel jobs: **unit** (`npm test`), **e2e** (Playwright smoke tests in Chromium, desktop and phone; the test output is uploaded when a test fails) and **lighthouse** (Lighthouse CI on exactly the files that get deployed; the report is uploaded as an artifact) |
+| `deploy.yml` | After **CI passes on `main`**, or a manual run | Publishes the site's files to GitHub Pages; the tests already ran in CI |
 
-Both workflows **skip documentation-only changes**: a commit that only touches `*.md`, `readme_assets/`, `LICENSE`, `.gitignore` or `.vscode/` does not start a run. A newer run on the same branch cancels the one still in progress.
+Deploy is chained to CI (`workflow_run`): a push to `main` is tested once, and only a green run is published, from exactly the commit that was tested. Documentation-only commits start neither.
+
+CI **skips documentation-only changes**: a commit that only touches `*.md`, `readme_assets/`, `LICENSE`, `.gitignore` or `.vscode/` does not start a run. A newer run on the same branch cancels the one still in progress.
 
 The deploy publishes only the files the site needs (`index.html`, `style.css`, `manifest.json`, `service-worker.js`, `src/`, `fonts/`, `icons/`). Tests and tooling are not deployed.
 

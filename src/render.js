@@ -545,7 +545,7 @@ export function renderInfo({
 export function renderWarnings({ usedFallback }) {
   const c = document.getElementById("warning-container");
   if (usedFallback) {
-    c.innerHTML = `<div class="warning-box">⚠️ Nije pronađeno potpuno validno rješenje u zadanom vremenu. Prikazuje se best-effort raspored — pokušaj isključiti neka pravila.</div>`;
+    c.innerHTML = `<div class="warning-box">⚠️ No fully valid map was found in the time budget. Showing the best attempt — try turning off a placement rule.</div>`;
   } else {
     c.innerHTML = "";
   }

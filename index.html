@@ -55,10 +55,44 @@
         <button class="btn-secondary" id="btn-png" title="Download the map as a PNG image">⬇ PNG</button>
       </div>
       <div class="controls-break"></div>
-      <label class="checkbox-row view-toggle">
-        <input type="checkbox" id="show-strength">
-        Show intersection strength
-      </label>
+      <div class="view-toggle">
+        <label class="checkbox-row">
+          <input type="checkbox" id="show-strength">
+          Show intersection strength
+        </label>
+        <button type="button" class="info-btn" id="strength-info-btn" aria-expanded="false"
+          aria-controls="strength-info" title="How is intersection strength calculated?">
+          <span aria-hidden="true">?</span><span class="sr-only">How is intersection strength calculated?</span>
+        </button>
+      </div>
+      <div class="info-panel" id="strength-info" role="region" aria-labelledby="strength-info-title" hidden>
+        <h4 id="strength-info-title">How intersection strength is calculated</h4>
+        <p>
+          Every number token has <strong>pips</strong>, the dots under the number. They count how many of the
+          36 possible rolls of two dice produce that number:
+        </p>
+        <table class="pip-table">
+          <tr><th>Number</th><td>2 · 12</td><td>3 · 11</td><td>4 · 10</td><td>5 · 9</td><td>6 · 8</td><td>Desert</td></tr>
+          <tr><th>Pips</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>0</td></tr>
+        </table>
+        <p>
+          An <strong>intersection</strong> is a corner where you can build, touching up to three land hexes
+          (one or two on the coast). Its strength is the <strong>sum of the pips</strong> of those hexes.
+          A corner between a 6, an 8 and a 9 has 5 + 5 + 4 = <strong>14 pips</strong>: over 36 rolls it
+          produces about 14 resource cards.
+        </p>
+        <ul class="tier-list">
+          <li><i style="background:#cfc4a8"></i>1–4 weak</li>
+          <li><i style="background:#e8b84b"></i>5–9 average</li>
+          <li><i style="background:#f08a3a"></i>10–12 strong</li>
+          <li><i style="background:#d93a2a"></i>13+ top spot</li>
+        </ul>
+        <p>
+          The info bar adds the <strong>best spot</strong>, the number of <strong>10+ spots</strong> and the
+          total pips of each resource, which shows whether something like ore is scarce on this map.
+          Ports, the robber and the barbarians are not counted.
+        </p>
+      </div>
 
     </div>
 

@@ -112,6 +112,21 @@ test("intersection strength overlay toggles and stays clear of the tokens", asyn
   await expect(overlay).toHaveCount(0);
 });
 
+test("the ? button explains how intersection strength is counted", async ({ page }) => {
+  await page.goto("./");
+  const btn = page.locator("#strength-info-btn");
+  const panel = page.locator("#strength-info");
+  await expect(panel).toBeHidden();
+  await btn.click();
+  await expect(panel).toBeVisible();
+  await expect(btn).toHaveAttribute("aria-expanded", "true");
+  await expect(panel).toContainText("5 + 5 + 4");
+  await expect(panel.locator(".pip-table td")).toHaveCount(12);
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(btn).toBeFocused();
+});
+
 test("PNG export downloads a 2× image of the map", async ({ page }) => {
   await page.goto("./");
   await waitForMap(page);

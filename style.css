@@ -299,7 +299,113 @@ main {
 }
 
 .view-toggle {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.6rem;
+}
+
+/* "?" next to the strength toggle and the explanation it opens */
+.info-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--gold2);
+  font-family: "Cinzel", serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.info-btn:hover,
+.info-btn[aria-expanded="true"] {
+  border-color: var(--gold);
+  background: var(--bg2);
+}
+.info-btn:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.info-panel {
+  flex-basis: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  color: var(--text2);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.info-panel[hidden] {
+  display: none;
+}
+.info-panel h4 {
+  font-family: "Cinzel", serif;
+  color: var(--gold);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.info-panel p {
+  margin: 0.5rem 0;
+}
+.info-panel strong {
+  color: var(--text);
+}
+.pip-table {
+  border-collapse: collapse;
+  margin: 0.6rem 0;
+  width: 100%;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.pip-table th,
+.pip-table td {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.4rem;
+}
+.pip-table th {
+  color: var(--gold2);
+  font-weight: 600;
+  text-align: left;
+}
+.tier-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0.6rem 0;
+  padding: 0;
+}
+.tier-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tier-list i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid #1a1208;
 }
 
 /* forces the Generate button onto its own row in the wrapping .controls flex */

@@ -10,7 +10,7 @@
  *
  * Bump CACHE on every release; old caches are deleted on activate.
  */
-const CACHE = "catan-map-v7";
+const CACHE = "catan-map-v8";
 
 const SHELL = [
   "./",

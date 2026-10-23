@@ -193,6 +193,21 @@ document.getElementById("btn-share").addEventListener("click", shareLink);
 document.getElementById("btn-png").addEventListener("click", exportPng);
 document.getElementById("show-strength").addEventListener("change", drawCurrent);
 
+// "?" next to the strength toggle: opens and closes the explanation
+const infoBtn = document.getElementById("strength-info-btn");
+const infoPanel = document.getElementById("strength-info");
+function setInfoOpen(open) {
+  infoPanel.hidden = !open;
+  infoBtn.setAttribute("aria-expanded", String(open));
+}
+infoBtn.addEventListener("click", () => setInfoOpen(infoPanel.hidden));
+addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !infoPanel.hidden) {
+    setInfoOpen(false);
+    infoBtn.focus();
+  }
+});
+
 // A link pasted into an open tab only changes the hash
 addEventListener("hashchange", () => {
   if (current && location.hash.slice(1) === encodeMap(current)) return;
