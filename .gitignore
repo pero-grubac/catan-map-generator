@@ -26,3 +26,8 @@ desktop.ini
 .vscode/*
 !.vscode/settings.json
 *.swp
+
+# Test and audit output
+test-results/
+playwright-report/
+.lighthouseci/

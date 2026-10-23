@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getRowCounts, buildGrid, rcToIdx } from "../src/grid.js";
+import {
+  getRowCounts,
+  buildGrid,
+  rcToIdx,
+  buildVertices,
+  hexCenterUnit,
+} from "../src/grid.js";
 import { MODES, setup, hexCenter } from "./helpers.js";
 
 test("row layouts have 19 and 30 land hexes", () => {
@@ -51,3 +57,42 @@ for (const mode of MODES) {
     });
   });
 }
+
+const VERTEX_COUNTS = { standard: 54, knights: 54, extended: 80 };
+
+for (const mode of MODES) {
+  test(`${mode}: ${VERTEX_COUNTS[mode]} intersections, every hex corner counted once`, () => {
+    const { rowCounts, hexes } = setup(mode);
+    const vertices = buildVertices(hexes, rowCounts);
+    assert.equal(vertices.length, VERTEX_COUNTS[mode]);
+    // each hex has 6 corners, so the hex lists add up to 6 × hexes
+    const refs = vertices.reduce((a, v) => a + v.hexes.length, 0);
+    assert.equal(refs, 6 * hexes.length);
+    for (const h of hexes) {
+      assert.equal(vertices.filter((v) => v.hexes.includes(h.id)).length, 6, `hex ${h.id}`);
+    }
+  });
+
+  test(`${mode}: hexes sharing an intersection are neighbours`, () => {
+    const { rowCounts, hexes, nc } = setup(mode);
+    for (const v of buildVertices(hexes, rowCounts)) {
+      assert.ok(v.hexes.length >= 1 && v.hexes.length <= 3);
+      for (const a of v.hexes)
+        for (const b of v.hexes) if (a !== b) assert.ok(nc[a].includes(b), `${a} ↔ ${b}`);
+      // and the corner is one hex radius from each of their centres
+      for (const h of v.hexes) {
+        const c = hexCenterUnit(rowCounts, hexes[h].r, hexes[h].c);
+        assert.ok(Math.abs(Math.hypot(v.x - c.x, v.y - c.y) - 1) < 1e-9);
+      }
+    }
+  });
+}
+
+test("standard board: 24 inland intersections, 30 on the coast", () => {
+  const { rowCounts, hexes } = setup("standard");
+  const vertices = buildVertices(hexes, rowCounts);
+  const by = (k) => vertices.filter((v) => v.hexes.length === k).length;
+  assert.equal(by(3), 24);
+  assert.equal(by(2), 12);
+  assert.equal(by(1), 18);
+});

@@ -121,7 +121,16 @@ function drawResourceIcon(resource, cx, cy, w, color, outline) {
   return svgEl("path", attrs);
 }
 
-export function renderMap({ mode, hexes, rowCounts, resourceArr, numberArr }) {
+export function renderMap({
+  mode,
+  hexes,
+  rowCounts,
+  resourceArr,
+  numberArr,
+  vertices,
+  pips,
+  showStrength,
+}) {
   const svg = document.getElementById("map-svg");
   const S = mode === "extended" ? 54 : 64;
   const DX = Math.sqrt(3) * S;
@@ -415,25 +424,122 @@ export function renderMap({ mode, hexes, rowCounts, resourceArr, numberArr }) {
 
     svg.appendChild(g);
   });
+
+  // ── 3. Intersection strength overlay (optional) ──
+  if (showStrength && vertices && pips) {
+    svg.appendChild(drawStrengthOverlay(vertices, pips, S, offX, offY));
+  }
+}
+
+// ─── Intersection strength ────────────────────────────────────────────────────
+// One disc per land-hex corner, growing and warming with its total pips.
+// Discs stay under 0.2 hex radii, so they end well before the number token
+// (centred 0.52 radii below the hex centre) and never cover it.
+
+export const STRENGTH_TIERS = [
+  { min: 13, fill: "#d93a2a", text: "#fff", label: "13+" },
+  { min: 10, fill: "#f08a3a", text: "#1a0e04", label: "10–12" },
+  { min: 5, fill: "#e8b84b", text: "#1a0e04", label: "5–9" },
+  { min: 1, fill: "#cfc4a8", text: "#1a0e04", label: "1–4" },
+];
+
+export function strengthTier(total) {
+  return STRENGTH_TIERS.find((t) => total >= t.min) || null;
+}
+
+function drawStrengthOverlay(vertices, pips, S, offX, offY) {
+  const g = svgEl("g", { class: "strength-overlay", "pointer-events": "none" });
+  vertices.forEach((v, i) => {
+    const total = pips[i];
+    const tier = strengthTier(total);
+    if (!tier) return; // a corner touching only the desert
+    const x = v.x * S + offX,
+      y = v.y * S + offY;
+    const r = S * (0.125 + 0.005 * Math.min(total, 15));
+    g.appendChild(
+      svgEl("circle", {
+        cx: x,
+        cy: y,
+        r,
+        fill: tier.fill,
+        stroke: "#1a1208",
+        "stroke-width": "1.5",
+      }),
+    );
+    g.appendChild(
+      svgEl(
+        "text",
+        {
+          x,
+          y,
+          "text-anchor": "middle",
+          "dominant-baseline": "central",
+          "font-family": "Oswald, sans-serif",
+          "font-size": `${Math.max(S * 0.14, r * 1.1).toFixed(1)}px`,
+          "font-weight": "600",
+          fill: tier.text,
+        },
+        String(total),
+      ),
+    );
+  });
+  return g;
 }
 
 // ─── Info & warnings ──────────────────────────────────────────────────────────
 
-export function renderInfo({ mode, attempts, elapsed, scoreRange, usedFallback }) {
+export function renderInfo({
+  mode,
+  attempts,
+  elapsed,
+  scoreRange,
+  usedFallback,
+  shared,
+  score,
+  valid,
+  summary,
+}) {
   const modeLabel = MODE_LABELS[mode];
-  const timeStr =
-    elapsed < 1000 ? `${elapsed}ms` : `${(elapsed / 1000).toFixed(1)}s`;
-  const status = usedFallback
-    ? `<span style="color:#f08040">Best effort</span>`
-    : `<span style="color:#80c840">Valid ✓ (best of ${attempts})</span>`;
-  const scoreStr = scoreRange ? `${scoreRange[0]} → ${scoreRange[1]}` : "—";
-
-  document.getElementById("info-bar").innerHTML = `
+  let pills;
+  if (shared) {
+    // A map opened from a link: nothing was generated in this session
+    const status = valid
+      ? `<span style="color:#80c840">Valid ✓ (shared link)</span>`
+      : `<span style="color:#f08040">Shared link (rules not all met)</span>`;
+    pills = `
+    <div class="info-pill">Mode: <span>${modeLabel}</span></div>
+    <div class="info-pill">Score: <span>${score}</span></div>
+    <div class="info-pill">Status: ${status}</div>`;
+  } else {
+    const timeStr =
+      elapsed < 1000 ? `${elapsed}ms` : `${(elapsed / 1000).toFixed(1)}s`;
+    const status = usedFallback
+      ? `<span style="color:#f08040">Best effort</span>`
+      : `<span style="color:#80c840">Valid ✓ (best of ${attempts})</span>`;
+    const scoreStr = scoreRange ? `${scoreRange[0]} → ${scoreRange[1]}` : "—";
+    pills = `
     <div class="info-pill">Mode: <span>${modeLabel}</span></div>
     <div class="info-pill">Time: <span>${timeStr}</span></div>
     <div class="info-pill">Score range: <span>${scoreStr}</span></div>
-    <div class="info-pill">Status: ${status}</div>
-  `;
+    <div class="info-pill">Status: ${status}</div>`;
+  }
+
+  let fairness = "";
+  if (summary) {
+    const perRes = Object.keys(RESOURCE_COLORS)
+      .filter((r) => r in summary.perResource)
+      .map(
+        (r) =>
+          `<span class="res-pips" title="${RESOURCE_COLORS[r].label}: ${summary.perResource[r]} pips"><i style="background:${RESOURCE_COLORS[r].fill}"></i>${summary.perResource[r]}</span>`,
+      )
+      .join("");
+    fairness = `
+    <div class="info-pill" id="pip-best">Best spot: <span>${summary.best} pips</span></div>
+    <div class="info-pill" id="pip-strong">10+ spots: <span>${summary.strong}</span></div>
+    <div class="info-pill" id="pip-resources">Pips: ${perRes}</div>`;
+  }
+
+  document.getElementById("info-bar").innerHTML = pills + fairness;
 }
 
 export function renderWarnings({ usedFallback }) {

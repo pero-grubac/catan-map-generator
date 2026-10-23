@@ -258,3 +258,50 @@ export function generateBestMap({
     scoreRange: [candidates[0].score, candidates[candidates.length - 1].score],
   };
 }
+
+// ─── Fairness ─────────────────────────────────────────────────────────────────
+// Pips (the dots on a token) count the ways to roll a number with two dice:
+// 2/12 = 1 … 6/8 = 5, desert = 0. An intersection collects the pips of every
+// land hex it touches, so its total is how often a settlement there produces.
+
+export const STRONG_SPOT = 10;
+
+export function pipsOf(number) {
+  return NUM_DOTS[number] || 0;
+}
+
+export function vertexPips(vertices, numberArr) {
+  return vertices.map((v) =>
+    v.hexes.reduce((sum, h) => sum + pipsOf(numberArr[h]), 0),
+  );
+}
+
+export function pipSummary(vertices, resourceArr, numberArr) {
+  const totals = vertexPips(vertices, numberArr);
+  const perResource = {};
+  resourceArr.forEach((r, i) => {
+    if (r === "desert") return;
+    perResource[r] = (perResource[r] || 0) + pipsOf(numberArr[i]);
+  });
+  return {
+    totals,
+    best: Math.max(0, ...totals),
+    strong: totals.filter((t) => t >= STRONG_SPOT).length,
+    perResource,
+  };
+}
+
+// True when a map keeps every enabled placement rule (used for shared maps,
+// which are not produced by the generator in this session).
+export function checkRules(nc, resourceArr, numberArr, { no68, no212, noSameRes }) {
+  for (let i = 0; i < nc.length; i++) {
+    for (const n of nc[i]) {
+      if (n <= i) continue;
+      const [a, b] = [numberArr[i], numberArr[n]];
+      if (noSameRes && resourceArr[i] === resourceArr[n]) return false;
+      if (no68 && HOT.has(a) && HOT.has(b)) return false;
+      if (no212 && RARE.has(a) && RARE.has(b)) return false;
+    }
+  }
+  return true;
+}

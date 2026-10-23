@@ -7,7 +7,12 @@ import {
   btNumbers,
   scoreMap,
   generateBestMap,
+  pipsOf,
+  vertexPips,
+  pipSummary,
+  checkRules,
 } from "../src/generator.js";
+import { buildVertices } from "../src/grid.js";
 import { MODES, setup, countBy } from "./helpers.js";
 
 const RUNS = 50;
@@ -130,4 +135,61 @@ test("scoreMap penalises uneven probability per resource", () => {
   const nc = [[], []];
   // forest 5 dots, hills 1 dot → variance 4
   assert.equal(scoreMap(hexes, nc, ["forest", "hills"], [6, 2]), -4);
+});
+
+test("pip table: 2/12=1, 3/11=2, 4/10=3, 5/9=4, 6/8=5, desert 0", () => {
+  const expected = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
+  for (const [n, p] of Object.entries(expected)) assert.equal(pipsOf(Number(n)), p, `${n}`);
+  assert.equal(pipsOf(null), 0);
+});
+
+test("an intersection's pips are the sum over its land hexes", () => {
+  const vertices = [
+    { hexes: [0, 1, 2] }, // 6 + 8 + desert
+    { hexes: [1, 3] }, // coast: 8 + 2
+    { hexes: [3] }, // corner: 2
+    { hexes: [2] }, // desert only
+  ];
+  const numberArr = [6, 8, null, 2];
+  assert.deepEqual(vertexPips(vertices, numberArr), [10, 6, 1, 0]);
+});
+
+test("pipSummary reports best spot, 10+ spots and pips per resource", () => {
+  const vertices = [{ hexes: [0, 1, 2] }, { hexes: [1, 3] }, { hexes: [0, 3] }];
+  const resourceArr = ["forest", "hills", "desert", "forest"];
+  const numberArr = [6, 9, null, 12];
+  const s = pipSummary(vertices, resourceArr, numberArr);
+  assert.deepEqual(s.totals, [9, 5, 6]);
+  assert.equal(s.best, 9);
+  assert.equal(s.strong, 0);
+  assert.deepEqual(s.perResource, { forest: 6, hills: 4 });
+  assert.equal(pipSummary([{ hexes: [0, 1] }], ["forest", "hills"], [6, 9]).strong, 0);
+  assert.equal(pipSummary([{ hexes: [0, 1, 2] }], ["forest", "hills", "fields"], [6, 9, 2]).strong, 1);
+});
+
+for (const mode of MODES) {
+  test(`${mode}: pips over all intersections add up to 6 × the token pips`, () => {
+    // every hex has six corners, so each token is counted six times
+    const { rowCounts, hexes, nc } = setup(mode);
+    const result = generateBestMap({
+      hexes, nc, available: MODE_RESOURCES[mode], numbers: MODE_NUMBERS[mode],
+      noSameRes: false, no68: false, no212: false, totalTimeout: 50,
+    });
+    const s = pipSummary(buildVertices(hexes, rowCounts), result.resourceArr, result.numberArr);
+    const tokenPips = MODE_NUMBERS[mode].reduce((a, n) => a + pipsOf(n), 0);
+    assert.equal(s.totals.reduce((a, b) => a + b, 0), 6 * tokenPips);
+    assert.equal(Object.values(s.perResource).reduce((a, b) => a + b, 0), tokenPips);
+    assert.ok(!("desert" in s.perResource));
+    assert.ok(s.best <= 15);
+  });
+}
+
+test("checkRules flags each broken rule only when it is enabled", () => {
+  const nc = [[1], [0]];
+  const all = { no68: true, no212: true, noSameRes: true };
+  assert.equal(checkRules(nc, ["forest", "hills"], [5, 9], all), true);
+  assert.equal(checkRules(nc, ["forest", "forest"], [5, 9], all), false);
+  assert.equal(checkRules(nc, ["forest", "hills"], [6, 8], all), false);
+  assert.equal(checkRules(nc, ["forest", "hills"], [2, 12], all), false);
+  assert.equal(checkRules(nc, ["forest", "forest"], [6, 8], {}), true);
 });

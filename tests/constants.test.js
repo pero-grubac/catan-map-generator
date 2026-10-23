@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import {
   NUM_DOTS,
   PORT_POSITIONS,
@@ -46,11 +46,14 @@ test("barbarian track starts on an east-coast land hex", () => {
 
 test("service worker caches every source module and asset", () => {
   const sw = readFileSync(new URL("../service-worker.js", import.meta.url), "utf8");
-  const assets = [...sw.matchAll(/"\.\/([^"]+)"/g)].map((m) => m[1]);
+  const shell = sw.match(/const SHELL = \[([\s\S]*?)\];/);
+  assert.ok(shell, "SHELL list not found");
+  const assets = [...shell[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
   for (const a of assets) {
     assert.ok(existsSync(new URL(`../${a}`, import.meta.url)), `missing ${a}`);
   }
-  for (const f of ["grid.js", "generator.js", "render.js", "main.js", "constants.js", "icons.js"]) {
-    assert.ok(assets.includes(`src/${f}`), `src/${f} not cached`);
+  // every module under src/ must be precached, or the app breaks offline
+  for (const f of readdirSync(new URL("../src/", import.meta.url))) {
+    if (f.endsWith(".js")) assert.ok(assets.includes(`src/${f}`), `src/${f} not cached`);
   }
 });
