@@ -16,7 +16,7 @@
 
 [![Live Demo](https://img.shields.io/badge/🗺️_Live_Demo-catan--map--generator-C9973A?style=for-the-badge)](https://pero-grubac.github.io/catan-map-generator/)
 
-<img src="readme_assets/demo.gif" alt="Catan Map Generator demo: generating a standard map, switching to Cities and Knights, turning on the intersection strength overlay, copying the share link, generating an extended 5-6 player board, then opening the copied link, which brings back the exact Cities and Knights map" width="820">
+<img src="readme_assets/demo.gif" alt="Catan Map Generator demo: rolling two standard maps, switching to Cities and Knights, turning on the intersection strength overlay, copying the share link, then generating the 5-6 player board" width="820">
 
 </div>
 
